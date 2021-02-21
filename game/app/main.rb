@@ -51,6 +51,10 @@ class World
 end
 
 class Renderer
+  def initialize
+    @entity_tiles = {}
+  end
+
   def render_world(args, world)
     world.entities.each do |entity|
       render_entity(args, entity)
@@ -61,8 +65,12 @@ class Renderer
 
   def render_entity(args, entity)
     position = entity[:position]
-    tile = Tile.for(entity[:type]).merge(x: position.x * 24, y: position.y * 24)
+    tile = entity_tile(entity).update(x: position.x * 24, y: position.y * 24)
     args.outputs.primitives << tile
+  end
+
+  def entity_tile(entity)
+    @entity_tiles[entity[:id]] ||= Tile.for(entity[:type])
   end
 end
 
