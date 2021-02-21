@@ -5,14 +5,48 @@ require 'lib/resources.rb'
 require 'app/resources.rb'
 
 class World
-  attr_reader :entities
-
   def initialize
-    @entities = []
+    @entities = {}
+    @next_entity_id = 0
+  end
+
+  def entities
+    @entities.values
   end
 
   def add_entity(type, attributes)
-    @entities << { type: type }.merge(attributes)
+    id = next_entity_id
+    @entities[id] = { type: type, id: id }.merge(attributes)
+    id
+  end
+
+  def set_entity_property(id, attributes)
+    @entities[id].merge!(attributes)
+  end
+
+  def get_entity_property(id, property)
+    @entities[id][property]
+  end
+
+  def tick
+    handle_movement
+  end
+
+  private
+
+  def next_entity_id
+    result = @next_entity_id
+    @next_entity_id += 1
+    result
+  end
+
+  def handle_movement
+    entities.each do |entity|
+      position = entity[:position]
+      velocity = entity[:velocity]
+      position.x += velocity.x
+      position.y += velocity.y
+    end
   end
 end
 
