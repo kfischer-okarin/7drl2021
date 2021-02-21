@@ -28,6 +28,10 @@ class World
     @entities[id][property]
   end
 
+  def position_of(entity)
+    entity[:position]
+  end
+
   def tick
     handle_movement
   end
@@ -57,14 +61,13 @@ class Renderer
 
   def render_world(args, world)
     world.entities.each do |entity|
-      render_entity(args, entity)
+      render_entity(args, entity, world.position_of(entity))
     end
   end
 
   private
 
-  def render_entity(args, entity)
-    position = entity[:position]
+  def render_entity(args, entity, position)
     tile = entity_tile(entity).update(x: position.x * 24, y: position.y * 24)
     args.outputs.primitives << tile
   end
