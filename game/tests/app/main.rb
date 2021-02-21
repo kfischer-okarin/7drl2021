@@ -26,5 +26,49 @@ def test_player_can_move(_args, assert)
   assert.equal! world.get_entity_property(player_id, :position), [3, 5]
 end
 
+module TestHelper
+  class << self
+    def clear_keyboard(args)
+      args.inputs.keyboard.key_down.clear
+    end
+
+    def simulate_keypress(args, *keys)
+      clear_keyboard(args)
+      args.inputs.keyboard.key_down.set keys
+    end
+  end
+end
+
+def test_input_sets_player_velocity(args, assert)
+  world = World.new
+  player_id = world.add_entity :player, position: [2, 5]
+  input = Input.new(player_id)
+
+  TestHelper.simulate_keypress(args, :left)
+  input.apply_to(args, world)
+
+  assert.equal! world.get_entity_property(player_id, :velocity), [-1, 0]
+
+  TestHelper.simulate_keypress(args, :right)
+  input.apply_to(args, world)
+
+  assert.equal! world.get_entity_property(player_id, :velocity), [1, 0]
+
+  TestHelper.simulate_keypress(args, :up)
+  input.apply_to(args, world)
+
+  assert.equal! world.get_entity_property(player_id, :velocity), [0, 1]
+
+  TestHelper.simulate_keypress(args, :down)
+  input.apply_to(args, world)
+
+  assert.equal! world.get_entity_property(player_id, :velocity), [0, -1]
+
+  TestHelper.clear_keyboard(args)
+  input.apply_to(args, world)
+
+  assert.equal! world.get_entity_property(player_id, :velocity), [0, 0]
+end
+
 $gtk.reset 100
 $gtk.log_level = :off

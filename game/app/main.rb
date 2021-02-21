@@ -76,18 +76,48 @@ class Tile
   end
 end
 
+class Input
+  def initialize(player_id)
+    @player_id = player_id
+  end
+
+  def any?(args)
+    args.inputs.keyboard.key_down.truthy_keys.any?
+  end
+
+  def apply_to(args, world)
+    velocity = calc_velocity_from_input(args.inputs)
+    world.set_entity_property(@player_id, velocity: velocity)
+  end
+
+  private
+
+  def calc_velocity_from_input(gtk_inputs)
+    key_down = gtk_inputs.keyboard.key_down
+
+    [key_down.left_right, key_down.up_down]
+  end
+end
+
 def setup(args)
   world = World.new
   args.state.world = world
-  world.add_entity :player, position: [2, 5]
+  player_id = world.add_entity :player, position: [2, 5]
   $renderer = Renderer.new
+  $input = Input.new(player_id)
 end
 
 def tick(args)
   setup(args) if args.tick_count.zero?
 
+  world = args.state.world
+  if $input.any?(args)
+    $input.apply_to(args, world)
+    world.tick
+  end
+
   args.outputs.background_color = [0, 0, 0]
-  $renderer.render_world(args, args.state.world)
+  $renderer.render_world(args, world)
 end
 
 $gtk.reset
