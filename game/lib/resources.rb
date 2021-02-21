@@ -50,7 +50,7 @@ module Resources
   class ResourceGroup
     include ContainingResourceGroup
 
-    RESERVED_NAMES = Set.new(:name, :extension, :add, :initialize, :group)
+    RESERVED_NAMES = Set.new(:name, :extension, :add, :initialize, :group, :data)
 
     attr_reader :name, :extension
 
@@ -66,8 +66,12 @@ module Resources
       path = "#{@name}/#{key}.#{extension}"
       @resources[key] = Resource.new(path, resource_data)
       define_singleton_method key do
-        @resources[key]
+        @resources[key].path
       end
+    end
+
+    def data(key)
+      @resources[key].data
     end
   end
 
