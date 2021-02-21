@@ -14,5 +14,13 @@ Style/RedundantFileExtensionInRequire:
   Exclude:
     - game/**/*
 
+Metrics/MethodLength:
+  Exclude:
+    - game/tests/**/*
+
+Metrics/AbcSize:
+  Exclude:
+    - game/tests/**/*
+
 Style/BlockDelimiters:
   EnforcedStyle: semantic
