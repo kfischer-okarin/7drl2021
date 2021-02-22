@@ -65,6 +65,14 @@ class Renderer
     end
   end
 
+  def render_string(args, string, attributes)
+    args.outputs.primitives << string.chars.map_with_index { |char, index|
+      Tile.for_letter(char).merge(attributes).tap { |tile|
+        tile.x += index * 16
+      }
+    }
+  end
+
   private
 
   def render_entity(args, entity, position)
@@ -78,12 +86,40 @@ class Renderer
 end
 
 class Tile
-  def self.for(entity_type)
-    {
-      path: Resources.sprites.tileset, w: 24, h: 24,
-      source_w: 24, source_h: 24, source_x: 0, source_y: 11 * 24,
-      r: 218, g: 212, b: 94
-    }
+  class << self
+    def at_position(position)
+      {
+        path: Resources.sprites.tileset, w: 24, h: 24,
+        source_w: 24, source_h: 24, source_x: position.x * 24, source_y: position.y * 24
+      }
+    end
+
+    def letter_tile_position(letter)
+      case letter
+      when 'A'..'O'
+        x = letter.ord - 'A'.ord + 1
+        [x, 11]
+      when 'P'..'Z'
+        x = letter.ord - 'P'.ord
+        [x, 10]
+      when 'a'..'o'
+        x = letter.ord - 'a'.ord + 1
+        [x, 9]
+      when 'p'..'z'
+        x = letter.ord - 'p'.ord
+        [x, 8]
+      else
+        [0, 15]
+      end
+    end
+
+    def for_letter(letter)
+      at_position(letter_tile_position(letter))
+    end
+
+    def for(entity_type)
+      at_position([0, 11]).merge(r: 218, g: 212, b: 94)
+    end
   end
 end
 
@@ -129,6 +165,7 @@ def tick(args)
 
   args.outputs.background_color = [0, 0, 0]
   $renderer.render_world(args, world)
+  $renderer.render_string(args, 'You find a red gemstone', x: 24, y: 24)
 end
 
 $gtk.reset

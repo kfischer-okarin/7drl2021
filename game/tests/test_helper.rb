@@ -8,6 +8,10 @@ module TestHelper
       clear_keyboard(args)
       args.inputs.keyboard.key_down.set keys
     end
+
+    def tile_attributes(tile)
+      tile.slice(:path, :source_x, :source_y, :source_w, :source_h, :w, :h)
+    end
   end
 end
 

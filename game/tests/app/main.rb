@@ -10,7 +10,9 @@ def test_player_is_rendered(args, assert)
 
   player_tile = Tile.for(:player)
   expected_attributes = { x: 2 * 24, y: 5 * 24 }.merge(
-    player_tile.slice(:path, :source_x, :source_y, :source_w, :source_h, :w, :h, :r, :g, :b, :a)
+    TestHelper.tile_attributes(player_tile)
+  ).merge(
+    player_tile.slice(:r, :g, :b, :a)
   )
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
@@ -53,6 +55,31 @@ def test_input_sets_player_velocity(args, assert)
   input.apply_to(args, world)
 
   assert.equal! world.get_entity_property(player_id, :velocity), [0, 0]
+end
+
+def test_text_can_be_rendered(args, assert)
+  renderer = Renderer.new
+  renderer.render_string(args, 'Hello', x: 100, y: 100)
+
+  letter_tile = Tile.for_letter('H')
+  expected_attributes = { x: 100, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+
+  letter_tile = Tile.for_letter('e')
+  expected_attributes = { x: 100 + 1 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+
+  letter_tile = Tile.for_letter('l')
+  expected_attributes = { x: 100 + 2 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+
+  letter_tile = Tile.for_letter('l')
+  expected_attributes = { x: 100 + 3 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+
+  letter_tile = Tile.for_letter('o')
+  expected_attributes = { x: 100 + 4 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
 
 $gtk.reset 100
