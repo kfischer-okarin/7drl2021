@@ -40,6 +40,12 @@ class World
     handle_movement
   end
 
+  def entities_inside_rect(rect)
+    entities.select { |entity|
+      position_of(entity).inside_rect? rect
+    }
+  end
+
   private
 
   def next_entity_id

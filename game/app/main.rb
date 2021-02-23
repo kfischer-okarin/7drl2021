@@ -21,9 +21,7 @@ class WorldView
   end
 
   def entities
-    @world.entities.select { |entity|
-      @world.position_of(entity).inside_rect? @bounds
-    }
+    @world.entities_inside_rect(@bounds)
   end
 
   def position_of(entity)
