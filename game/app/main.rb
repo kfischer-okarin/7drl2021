@@ -3,62 +3,7 @@ require 'lib/extra_keys.rb'
 require 'lib/resources.rb'
 
 require 'app/resources.rb'
-
-class World
-  def initialize
-    @entities = {}
-    @next_entity_id = 0
-  end
-
-  def entities
-    @entities.values
-  end
-
-  def entity(id)
-    @entities[id]
-  end
-
-  def add_entity(type, attributes)
-    id = next_entity_id
-    @entities[id] = { type: type, id: id }.merge(attributes)
-    id
-  end
-
-  def set_entity_property(id, attributes)
-    @entities[id].merge!(attributes)
-  end
-
-  def get_entity_property(id, property)
-    @entities[id][property]
-  end
-
-  def position_of(entity)
-    entity[:position]
-  end
-
-  def tick
-    handle_movement
-  end
-
-  private
-
-  def next_entity_id
-    result = @next_entity_id
-    @next_entity_id += 1
-    result
-  end
-
-  def handle_movement
-    entities.each do |entity|
-      next unless entity.key? :velocity
-
-      position = entity[:position]
-      velocity = entity[:velocity]
-      position.x += velocity.x
-      position.y += velocity.y
-    end
-  end
-end
+require 'app/world.rb'
 
 class WorldView
   attr_reader :origin
@@ -191,7 +136,7 @@ end
 def setup(args)
   world = World.new
   args.state.world = world
-  args.state.player_id = world.add_entity :player, position: [2, 5]
+  args.state.player_id = world.add_entity :player, position: [2, 5], velocity: [0, 0]
   20.times do
     world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor]
   end

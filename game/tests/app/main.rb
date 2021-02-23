@@ -47,15 +47,6 @@ def test_world_view_can_center_on_position(args, assert)
   assert.equal! [10, 13], world_view.origin
 end
 
-def test_player_can_move(_args, assert)
-  world = World.new
-  player_id = world.add_entity :player, position: [2, 5]
-  world.set_entity_property player_id, velocity: [1, 0]
-  world.tick
-
-  assert.equal! world.get_entity_property(player_id, :position), [3, 5]
-end
-
 def test_input_sets_player_velocity(args, assert)
   world = World.new
   player_id = world.add_entity :player, position: [2, 5]
