@@ -1,4 +1,8 @@
+require 'app/set.rb'
+
 class World
+  attr_reader :changed_positions
+
   def initialize(entities: nil, next_entity_id: 0)
     @entities = entities || {}
     @entities_by_position = {}
@@ -8,6 +12,7 @@ class World
       index_by_position entity
     end
     @next_entity_id = next_entity_id
+    @changed_positions = Set.new
   end
 
   def entities
@@ -40,6 +45,7 @@ class World
   end
 
   def tick
+    @changed_positions.clear
     handle_movement
   end
 
@@ -99,9 +105,11 @@ class World
       next if velocity.x.zero? && velocity.y.zero?
 
       position = entity[:position]
+      @changed_positions << position.dup
       remove_from_position_index entity
       position.x += velocity.x
       position.y += velocity.y
+      @changed_positions << position.dup
       index_by_position entity
     end
   end

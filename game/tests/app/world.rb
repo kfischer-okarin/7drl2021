@@ -5,6 +5,7 @@ def test_velocity_causes_move(_args, assert)
   world.tick
 
   assert.equal! world.get_entity_property(player_id, :position), [3, 5]
+  assert.equal! world.changed_positions, Set.new([2, 5], [3, 5])
 end
 
 def test_world_can_be_serialized_deserialized(_args, assert)
