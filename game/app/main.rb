@@ -14,6 +14,10 @@ class World
     @entities.values
   end
 
+  def entity(id)
+    @entities[id]
+  end
+
   def add_entity(type, attributes)
     id = next_entity_id
     @entities[id] = { type: type, id: id }.merge(attributes)
@@ -46,11 +50,44 @@ class World
 
   def handle_movement
     entities.each do |entity|
+      next unless entity.key? :velocity
+
       position = entity[:position]
       velocity = entity[:velocity]
       position.x += velocity.x
       position.y += velocity.y
     end
+  end
+end
+
+class WorldView
+  attr_reader :origin
+
+  def initialize(world, w:, h:)
+    @world = world
+    @w = w
+    @h = h
+    self.origin = [0, 0]
+  end
+
+  def origin=(value)
+    @origin = value
+    @bounds = [@origin.x, @origin.y, @w, @h]
+  end
+
+  def entities
+    @world.entities.select { |entity|
+      @world.position_of(entity).inside_rect? @bounds
+    }
+  end
+
+  def position_of(entity)
+    world_position = @world.position_of(entity)
+    [world_position.x - @origin.x, world_position.y - @origin.y]
+  end
+
+  def center_on(position)
+    self.origin = [position.x - @w.idiv(2), position.y - @h.idiv(2)]
   end
 end
 
@@ -118,7 +155,12 @@ class Tile
     end
 
     def for(entity_type)
-      at_position([0, 11]).merge(r: 218, g: 212, b: 94)
+      case entity_type
+      when :player
+        at_position([0, 11]).merge(r: 218, g: 212, b: 94)
+      when :tree
+        at_position([5, 15]).merge(r: 52, g: 101, b: 36)
+      end
     end
   end
 end
@@ -149,9 +191,14 @@ end
 def setup(args)
   world = World.new
   args.state.world = world
-  player_id = world.add_entity :player, position: [2, 5]
+  args.state.player_id = world.add_entity :player, position: [2, 5]
+  20.times do
+    world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor]
+  end
+  $world_view = WorldView.new(world, w: 40, h: 30)
+  $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
   $renderer = Renderer.new
-  $input = Input.new(player_id)
+  $input = Input.new(args.state.player_id)
 end
 
 def tick(args)
@@ -161,10 +208,11 @@ def tick(args)
   if $input.any?(args)
     $input.apply_to(args, world)
     world.tick
+    $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
   end
 
   args.outputs.background_color = [0, 0, 0]
-  $renderer.render_world(args, world)
+  $renderer.render_world(args, $world_view)
   $renderer.render_string(args, 'You find a red gemstone', x: 24, y: 24)
 end
 

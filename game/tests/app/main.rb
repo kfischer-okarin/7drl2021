@@ -6,8 +6,6 @@ def test_player_is_rendered(args, assert)
   renderer = Renderer.new
   renderer.render_world(args, world)
 
-  assert.equal! args.outputs.primitives.length, 1
-
   player_tile = Tile.for(:player)
   expected_attributes = { x: 2 * 24, y: 5 * 24 }.merge(
     TestHelper.tile_attributes(player_tile)
@@ -15,6 +13,38 @@ def test_player_is_rendered(args, assert)
     player_tile.slice(:r, :g, :b, :a)
   )
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
+end
+
+def test_world_view_can_be_rendered(args, assert)
+  world = World.new
+  world.add_entity :player, position: [12, 13]
+  world_view = WorldView.new(world, w: 5, h: 5)
+  world_view.origin = [0, 0]
+  renderer = Renderer.new
+  renderer.render_world(args, world_view)
+
+  assert.equal! args.outputs.primitives.length, 0
+
+  world_view.origin = [10, 10]
+  renderer.render_world(args, world_view)
+
+  player_tile = Tile.for(:player)
+  expected_attributes = { x: 2 * 24, y: 3 * 24 }.merge(
+    TestHelper.tile_attributes(player_tile)
+  ).merge(
+    player_tile.slice(:r, :g, :b, :a)
+  )
+  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+end
+
+def test_world_view_can_center_on_position(args, assert)
+  world = World.new
+  world_view = WorldView.new(world, w: 5, h: 5)
+  world_view.origin = [0, 0]
+
+  world_view.center_on([12, 15])
+
+  assert.equal! [10, 13], world_view.origin
 end
 
 def test_player_can_move(_args, assert)
