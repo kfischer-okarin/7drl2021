@@ -1,7 +1,10 @@
 class World
-  def initialize
-    @entities = {}
+  def initialize(entities = nil)
+    @entities = entities || {}
     @entities_by_component = {}
+    @entities.each do |entity|
+      index_by_components entity
+    end
     @next_entity_id = 0
   end
 
@@ -17,10 +20,7 @@ class World
     next_entity_id.tap { |id|
       entity = { type: type, id: id }.merge(components)
       @entities[id] = entity
-      components.keys.each do |component|
-        @entities_by_component[component] ||= []
-        @entities_by_component[component] << entity
-      end
+      index_by_components entity
     }
   end
 
@@ -46,12 +46,33 @@ class World
     }
   end
 
+  def serialize
+    "World.new(#{@entities.inspect})"
+  end
+
+  def inspect
+    serialize
+  end
+
+  def to_s
+    serialize
+  end
+
   private
 
   def next_entity_id
     result = @next_entity_id
     @next_entity_id += 1
     result
+  end
+
+  def index_by_components(entity)
+    entity.each do |component, _|
+      next if component == :id || component == :type
+
+      @entities_by_component[component] ||= []
+      @entities_by_component[component] << entity
+    end
   end
 
   def handle_movement
