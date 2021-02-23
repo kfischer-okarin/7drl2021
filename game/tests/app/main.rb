@@ -11,6 +11,29 @@ def test_player_is_rendered(args, assert)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
 
+def test_floor_is_rendered_for_non_entity_tiles(args, assert)
+  world = World.new
+  world_view = WorldView.new(world, w: 5, h: 5)
+  world.add_entity :player, position: [2, 3]
+  renderer = Renderer.new
+  renderer.render_world(args, world_view)
+
+  assert.equal! 25, args.outputs.primitives.length
+
+  player_tile = Tile.for(:player)
+  floor_tile = Tile.for(:floor)
+  (0...5).each do |x|
+    (0...5).each do |y|
+      expected_attributes = if x == 2 && y == 2
+                              TestHelper.tile_attributes(floor_tile, x: x * 24, y: y * 24)
+                            else
+                              TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24)
+                            end
+      assert.primitive_with!(expected_attributes, args.outputs.primitives)
+    end
+  end
+end
+
 def test_world_view_can_be_rendered(args, assert)
   world = World.new
   world.add_entity :player, position: [12, 13]
@@ -18,8 +41,6 @@ def test_world_view_can_be_rendered(args, assert)
   world_view.origin = [0, 0]
   renderer = Renderer.new
   renderer.render_world(args, world_view)
-
-  assert.equal! args.outputs.primitives.length, 0
 
   world_view.origin = [10, 10]
   renderer.render_world(args, world_view)
@@ -29,7 +50,7 @@ def test_world_view_can_be_rendered(args, assert)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
 
-def test_world_view_can_center_on_position(args, assert)
+def test_world_view_can_center_on_position(_args, assert)
   world = World.new
   world_view = WorldView.new(world, w: 5, h: 5)
   world_view.origin = [0, 0]

@@ -1,9 +1,11 @@
 class World
   def initialize(entities = nil)
     @entities = entities || {}
+    @entities_by_position = {}
     @entities_by_component = {}
-    @entities.each do |entity|
+    self.entities.each do |entity|
       index_by_components entity
+      index_by_position entity
     end
     @next_entity_id = 0
   end
@@ -21,6 +23,7 @@ class World
       entity = { type: type, id: id }.merge(components)
       @entities[id] = entity
       index_by_components entity
+      index_by_position entity
     }
   end
 
@@ -44,6 +47,10 @@ class World
     entities.select { |entity|
       position_of(entity).inside_rect? rect
     }
+  end
+
+  def entities_at(position)
+    @entities_by_position[position] || []
   end
 
   def serialize
@@ -75,12 +82,27 @@ class World
     end
   end
 
+  def index_by_position(entity)
+    @entities_by_position[entity[:position]] ||= []
+    @entities_by_position[entity[:position]] << entity
+  end
+
+  def remove_from_position_index(entity)
+    return unless @entities_by_position[entity[:position]]
+
+    @entities_by_position[entity[:position]].delete(entity)
+  end
+
   def handle_movement
     @entities_by_component[:velocity].each do |entity|
-      position = entity[:position]
       velocity = entity[:velocity]
+      next if velocity.x.zero? && velocity.y.zero?
+
+      position = entity[:position]
+      remove_from_position_index entity
       position.x += velocity.x
       position.y += velocity.y
+      index_by_position entity
     end
   end
 end

@@ -21,7 +21,13 @@ class WorldView
   end
 
   def entities
-    @world.entities_inside_rect(@bounds)
+    (0...@w).map { |x|
+      (0...@h).map { |y|
+        position = [x + @origin.x, y + @origin.y]
+        at_position = @world.entities_at(position)
+        at_position.empty? ? { type: :floor, position: position } : at_position
+      }
+    }.flatten
   end
 
   def position_of(entity)
@@ -61,7 +67,7 @@ class Renderer
   end
 
   def entity_tile(entity)
-    @entity_tiles[entity[:id]] ||= Tile.for(entity[:type])
+    Tile.for(entity[:type])
   end
 end
 
@@ -88,6 +94,8 @@ class Tile
       when 'p'..'z'
         x = letter.ord - 'p'.ord
         [x, 8]
+      when '.'
+        [14, 13]
       else
         [0, 15]
       end
@@ -103,6 +111,8 @@ class Tile
         at_position([0, 11]).merge(r: 218, g: 212, b: 94)
       when :tree
         at_position([5, 15]).merge(r: 52, g: 101, b: 36)
+      when :floor
+        for_letter('.').merge(r: 255, g: 255, b: 255)
       end
     end
   end
