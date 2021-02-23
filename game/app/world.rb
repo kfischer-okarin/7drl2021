@@ -1,5 +1,5 @@
 class World
-  def initialize(entities = nil)
+  def initialize(entities: nil, next_entity_id: 0)
     @entities = entities || {}
     @entities_by_position = {}
     @entities_by_component = {}
@@ -7,7 +7,7 @@ class World
       index_by_components entity
       index_by_position entity
     end
-    @next_entity_id = 0
+    @next_entity_id = next_entity_id
   end
 
   def entities
@@ -54,7 +54,7 @@ class World
   end
 
   def serialize
-    "World.new(#{@entities.inspect})"
+    "World.new(entities: #{@entities.inspect}, next_entity_id: #{@next_entity_id})"
   end
 
   def inspect

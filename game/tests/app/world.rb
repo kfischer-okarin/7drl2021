@@ -18,6 +18,7 @@ def test_world_can_be_serialized_deserialized(_args, assert)
 
   assert.true! restored_world.object_id != world.object_id
   assert.equal! restored_world.entities, world.entities
+  assert.equal! restored_world.next_entity_id, world.next_entity_id
 end
 
 $gtk.reset 100
