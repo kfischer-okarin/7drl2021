@@ -7,11 +7,7 @@ def test_player_is_rendered(args, assert)
   renderer.render_world(args, world)
 
   player_tile = Tile.for(:player)
-  expected_attributes = { x: 2 * 24, y: 5 * 24 }.merge(
-    TestHelper.tile_attributes(player_tile)
-  ).merge(
-    player_tile.slice(:r, :g, :b, :a)
-  )
+  expected_attributes = TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 5 * 24)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
 
@@ -29,11 +25,7 @@ def test_world_view_can_be_rendered(args, assert)
   renderer.render_world(args, world_view)
 
   player_tile = Tile.for(:player)
-  expected_attributes = { x: 2 * 24, y: 3 * 24 }.merge(
-    TestHelper.tile_attributes(player_tile)
-  ).merge(
-    player_tile.slice(:r, :g, :b, :a)
-  )
+  expected_attributes = TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
 
@@ -83,23 +75,23 @@ def test_text_can_be_rendered(args, assert)
   renderer.render_string(args, 'Hello', x: 100, y: 100)
 
   letter_tile = Tile.for_letter('H')
-  expected_attributes = { x: 100, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100, y: 100)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 
   letter_tile = Tile.for_letter('e')
-  expected_attributes = { x: 100 + 1 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 1 * 16, y: 100)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 
   letter_tile = Tile.for_letter('l')
-  expected_attributes = { x: 100 + 2 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 2 * 16, y: 100)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 
   letter_tile = Tile.for_letter('l')
-  expected_attributes = { x: 100 + 3 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 3 * 16, y: 100)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 
   letter_tile = Tile.for_letter('o')
-  expected_attributes = { x: 100 + 4 * 16, y: 100 }.merge(TestHelper.tile_attributes(letter_tile))
+  expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 4 * 16, y: 100)
   assert.primitive_with!(expected_attributes, args.outputs.primitives)
 end
 

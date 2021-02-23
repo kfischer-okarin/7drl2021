@@ -9,8 +9,9 @@ module TestHelper
       args.inputs.keyboard.key_down.set keys
     end
 
-    def tile_attributes(tile)
-      tile.slice(:path, :source_x, :source_y, :source_w, :source_h, :w, :h)
+    def tile_attributes(tile, *additional_attributes, **merged_attributes)
+      tile.slice(:path, :source_x, :source_y, :source_w, :source_h, :w, :h, *additional_attributes)
+          .merge(merged_attributes)
     end
   end
 end
