@@ -1,24 +1,11 @@
 require 'tests/test_helper.rb'
 
-def test_player_is_rendered(args, assert)
-  world = World.new
-  world.add_entity :player, position: [2, 5]
-  renderer = Renderer.new
-  renderer.render_world(args, world)
-
-  player_tile = Tile.for(:player)
-  expected_attributes = TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 5 * 24)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
-end
-
-def test_floor_is_rendered_for_non_entity_tiles(args, assert)
+def test_entities_and_floor_is_rendered(args, assert)
   world = World.new
   world_view = WorldView.new(world, w: 5, h: 5)
   world.add_entity :player, position: [2, 3]
   renderer = Renderer.new
   renderer.render_world(args, world_view)
-
-  assert.equal! 25, args.outputs.primitives.length
 
   player_tile = Tile.for(:player)
   floor_tile = Tile.for(:floor)
@@ -29,7 +16,7 @@ def test_floor_is_rendered_for_non_entity_tiles(args, assert)
                             else
                               TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24)
                             end
-      assert.primitive_with!(expected_attributes, args.outputs.primitives)
+      assert.primitive_was_rendered!(expected_attributes, args)
     end
   end
 end
@@ -41,13 +28,14 @@ def test_world_view_can_be_rendered(args, assert)
   world_view.origin = [0, 0]
   renderer = Renderer.new
   renderer.render_world(args, world_view)
+  args.outputs.primitives.clear
 
   world_view.origin = [10, 10]
   renderer.render_world(args, world_view)
 
   player_tile = Tile.for(:player)
   expected_attributes = TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+  assert.primitive_was_rendered!(expected_attributes, args)
 end
 
 def test_world_view_can_center_on_position(_args, assert)
@@ -57,7 +45,7 @@ def test_world_view_can_center_on_position(_args, assert)
 
   world_view.center_on([12, 15])
 
-  assert.equal! [10, 13], world_view.origin
+  assert.equal! world_view.origin, [10, 13]
 end
 
 def test_input_sets_player_velocity(args, assert)
@@ -97,23 +85,23 @@ def test_text_can_be_rendered(args, assert)
 
   letter_tile = Tile.for_letter('H')
   expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100, y: 100)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+  assert.primitive_was_rendered!(expected_attributes, args)
 
   letter_tile = Tile.for_letter('e')
   expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 1 * 16, y: 100)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+  assert.primitive_was_rendered!(expected_attributes, args)
 
   letter_tile = Tile.for_letter('l')
   expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 2 * 16, y: 100)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+  assert.primitive_was_rendered!(expected_attributes, args)
 
   letter_tile = Tile.for_letter('l')
   expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 3 * 16, y: 100)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+  assert.primitive_was_rendered!(expected_attributes, args)
 
   letter_tile = Tile.for_letter('o')
   expected_attributes = TestHelper.tile_attributes(letter_tile, x: 100 + 4 * 16, y: 100)
-  assert.primitive_with!(expected_attributes, args.outputs.primitives)
+  assert.primitive_was_rendered!(expected_attributes, args)
 end
 
 $gtk.reset 100
