@@ -2,6 +2,7 @@ require 'lib/debug_mode.rb'
 require 'lib/extra_keys.rb'
 require 'lib/resources.rb'
 
+require 'app/tilemap_chunk.rb'
 require 'app/resources.rb'
 require 'app/world.rb'
 
