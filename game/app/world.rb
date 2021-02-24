@@ -45,7 +45,6 @@ class World
   end
 
   def tick
-    @changed_positions.clear
     handle_movement
   end
 

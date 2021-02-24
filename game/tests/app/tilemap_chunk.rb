@@ -40,6 +40,12 @@ module TilemapChunkTest
       @rendered = Set.new
     end
 
+    def init_render(_args); end
+
+    def tile_size
+      1
+    end
+
     def render_tile_at_position(_args, tile, position)
       @rendered << [tile, position]
     end

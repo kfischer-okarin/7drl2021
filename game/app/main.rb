@@ -6,8 +6,43 @@ require 'app/tilemap_chunk.rb'
 require 'app/resources.rb'
 require 'app/world.rb'
 
+module WorldTileRenderer
+  def self.render_tile(world, position)
+    entities = world.entities_at(position)
+    if entities.empty?
+      Tile.for(:floor)
+    else
+      Tile.for(entities[0][:type])
+    end
+  end
+end
+
+class ChunkRenderer
+  attr_reader :chunk_path, :tile_size
+
+  def initialize(target:, tile_size:, chunk_w:, chunk_h:)
+    @chunk_path = target
+    @tile_size = tile_size
+    @chunk_w = chunk_w
+    @chunk_h = chunk_h
+  end
+
+  def init_render(args)
+    target = args.outputs[@chunk_path]
+    target.width = @chunk_w * @tile_size
+    target.height = @chunk_h * @tile_size
+  end
+
+  def render_tile_at_position(args, tile, position)
+    target = args.outputs[@chunk_path]
+    tile.x = position.x * @tile_size
+    tile.y = position.y * @tile_size
+    target.primitives << tile
+  end
+end
+
 class WorldView
-  attr_reader :origin
+  attr_reader :origin, :w, :h
 
   def initialize(world, w:, h:)
     @world = world
@@ -31,6 +66,14 @@ class WorldView
     }.flatten
   end
 
+  def entities_at(position)
+    @world.entities_at(position)
+  end
+
+  def changed_positions
+    @world.changed_positions
+  end
+
   def position_of(entity)
     world_position = @world.position_of(entity)
     [world_position.x - @origin.x, world_position.y - @origin.y]
@@ -42,14 +85,50 @@ class WorldView
 end
 
 class Renderer
+  class TilemapRenderer
+    def initialize(tilemap:, tile_size:, size:)
+      @tilemap = tilemap
+      @tile_size = tile_size
+      @size = size
+      @chunk_size = 8
+      @chunks = [
+        TilemapChunk.new(
+          map_rect: [0, 0, 40, 30],
+          tilemap: @tilemap ,
+          tile_renderer: WorldTileRenderer,
+          chunk_renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size, chunk_w: size.x, chunk_h: size.y)
+        )
+      ]
+      self.origin = [0, 0]
+    end
+
+    def origin=(value)
+      return if @origin == value
+
+      @origin = value
+      @chunks.each do |chunk|
+        chunk.x = (chunk.map_rect.x - value.x) * @tile_size
+        chunk.y = (chunk.map_rect.y - value.y) * @tile_size
+      end
+    end
+
+    def tick(args)
+      @chunks.each do |chunk|
+        chunk.tick(args)
+      end
+      args.outputs.primitives << @chunks
+    end
+  end
+
   def initialize
     @entity_tiles = {}
   end
 
   def render_world(args, world)
-    world.entities.each do |entity|
-      render_entity(args, entity, world.position_of(entity))
-    end
+    @renderer ||= TilemapRenderer.new(tilemap: world, tile_size: 24, size: [world.w, world.h])
+    @renderer.origin = world.origin
+    @renderer.tick(args)
+    world.changed_positions.clear
   end
 
   def render_string(args, string, attributes)
@@ -58,17 +137,6 @@ class Renderer
         tile.x += index * 16
       }
     }
-  end
-
-  private
-
-  def render_entity(args, entity, position)
-    tile = entity_tile(entity).update(x: position.x * 24, y: position.y * 24)
-    args.outputs.primitives << tile
-  end
-
-  def entity_tile(entity)
-    Tile.for(entity[:type])
   end
 end
 
