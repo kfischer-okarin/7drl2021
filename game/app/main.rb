@@ -34,7 +34,7 @@ class ChunkRenderer
   end
 
   def render_size(chunk)
-    [chunk.map_rect.w * @tile_size, chunk.map_rect.h * @tile_size]
+    [chunk.rect.w * @tile_size, chunk.rect.h * @tile_size]
   end
 
   def init_render(args, chunk)
@@ -102,9 +102,9 @@ class Renderer
       @chunk_size = 8
       @chunks = [
         TilemapChunk.new(
-          map_rect: [0, 0, 40, 30],
+          rect: [0, 0, 40, 30],
           tilemap: @tilemap ,
-          chunk_renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size)
+          renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size)
         )
       ]
       self.origin = [0, 0]
@@ -115,8 +115,8 @@ class Renderer
 
       @origin = value
       @chunks.each do |chunk|
-        chunk.x = (chunk.map_rect.x - value.x) * @tile_size
-        chunk.y = (chunk.map_rect.y - value.y) * @tile_size
+        chunk.x = (chunk.rect.x - value.x) * @tile_size
+        chunk.y = (chunk.rect.y - value.y) * @tile_size
       end
     end
 

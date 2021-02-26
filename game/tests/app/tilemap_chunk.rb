@@ -1,9 +1,9 @@
 module TilemapChunkTest
-  def self.chunk_with(tilemap: nil, chunk_renderer: nil, map_rect:)
+  def self.chunk_with(tilemap: nil, renderer: nil, rect:)
     TilemapChunk.new(
-      map_rect: map_rect,
+      rect: rect,
       tilemap: tilemap || Tilemap.new,
-      chunk_renderer: chunk_renderer || ChunkRenderer.new
+      renderer: renderer || ChunkRenderer.new
     )
   end
 
@@ -43,12 +43,12 @@ module TilemapChunkTest
 end
 
 def test_update_renders_all_tiles_after_creation(args, assert)
-  chunk_renderer = TilemapChunkTest::ChunkRenderer.new
+  renderer = TilemapChunkTest::ChunkRenderer.new
 
-  chunk = TilemapChunkTest.chunk_with(map_rect: [4, 4, 2, 2], chunk_renderer: chunk_renderer)
+  chunk = TilemapChunkTest.chunk_with(rect: [4, 4, 2, 2], renderer: renderer)
   chunk.tick(args)
 
-  assert.equal! chunk_renderer.rendered, Set.new(
+  assert.equal! renderer.rendered, Set.new(
     [{ position: [4, 4] }, [0, 0]],
     [{ position: [4, 5] }, [0, 1]],
     [{ position: [5, 4] }, [1, 0]],
@@ -58,15 +58,15 @@ end
 
 def test_update_renders_all_tiles_when_tile_in_area_changes(args, assert)
   tilemap = TilemapChunkTest::Tilemap.new
-  chunk_renderer = TilemapChunkTest::ChunkRenderer.new
+  renderer = TilemapChunkTest::ChunkRenderer.new
 
-  chunk = TilemapChunkTest.chunk_with(map_rect: [0, 0, 2, 2], tilemap: tilemap, chunk_renderer: chunk_renderer)
+  chunk = TilemapChunkTest.chunk_with(rect: [0, 0, 2, 2], tilemap: tilemap, renderer: renderer)
   chunk.tick(args)
-  chunk_renderer.clear
+  renderer.clear
 
   tilemap.changed_positions = Set.new([1, 1])
   chunk.tick(args)
-  assert.equal! chunk_renderer.rendered, Set.new(
+  assert.equal! renderer.rendered, Set.new(
     [{ position: [0, 0] }, [0, 0]],
     [{ position: [0, 1] }, [0, 1]],
     [{ position: [1, 0] }, [1, 0]],
@@ -76,28 +76,28 @@ end
 
 def test_update_renders_nothing_when_tile_outside_area_changes(args, assert)
   tilemap = TilemapChunkTest::Tilemap.new
-  chunk_renderer = TilemapChunkTest::ChunkRenderer.new
+  renderer = TilemapChunkTest::ChunkRenderer.new
 
-  chunk = TilemapChunkTest.chunk_with(map_rect: [0, 0, 2, 2], tilemap: tilemap, chunk_renderer: chunk_renderer)
+  chunk = TilemapChunkTest.chunk_with(rect: [0, 0, 2, 2], tilemap: tilemap, renderer: renderer)
   chunk.tick(args)
-  chunk_renderer.clear
+  renderer.clear
 
   tilemap.changed_positions = Set.new([5, 5])
   chunk.tick(args)
-  assert.equal! chunk_renderer.rendered, Set.new
+  assert.equal! renderer.rendered, Set.new
 end
 
-def test_update_renders_all_tiles_when_map_rect_changes(args, assert)
+def test_update_renders_all_tiles_when_rect_changes(args, assert)
   tilemap = TilemapChunkTest::Tilemap.new
-  chunk_renderer = TilemapChunkTest::ChunkRenderer.new
+  renderer = TilemapChunkTest::ChunkRenderer.new
 
-  chunk = TilemapChunkTest.chunk_with(map_rect: [0, 0, 2, 2], tilemap: tilemap, chunk_renderer: chunk_renderer)
+  chunk = TilemapChunkTest.chunk_with(rect: [0, 0, 2, 2], tilemap: tilemap, renderer: renderer)
   chunk.tick(args)
-  chunk_renderer.clear
+  renderer.clear
 
-  chunk.map_rect = [2, 3, 2, 2]
+  chunk.rect = [2, 3, 2, 2]
   chunk.tick(args)
-  assert.equal! chunk_renderer.rendered, Set.new(
+  assert.equal! renderer.rendered, Set.new(
     [{ position: [2, 3] }, [0, 0]],
     [{ position: [2, 4] }, [0, 1]],
     [{ position: [3, 3] }, [1, 0]],

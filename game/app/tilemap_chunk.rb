@@ -1,32 +1,31 @@
 class TilemapChunk
   attr_accessor :x, :y
-  attr_reader :map_rect
+  attr_reader :rect
 
-  def initialize(tilemap:, map_rect:, chunk_renderer:)
+  def initialize(tilemap:, rect:, renderer:)
     @tilemap = tilemap
-    @chunk_renderer = chunk_renderer
-    self.map_rect = map_rect
-    @full_redraw = true
+    @renderer = renderer
+    self.rect = rect
   end
 
   def path
-    @chunk_renderer.path
+    @renderer.path
   end
 
-  def map_rect=(value)
-    @map_rect = value
+  def rect=(value)
+    @rect = value
     @chunk_positions = calc_chunk_positions
-    @w, @h = @chunk_renderer.render_size(self)
+    @w, @h = @renderer.render_size(self)
     @full_redraw = true
   end
 
   def tick(args)
     return unless dirty?
 
-    @chunk_renderer.init_render(args, self)
+    @renderer.init_render(args, self)
     @chunk_positions.each do |chunk_position, map_position|
       tile = @tilemap.tile_at(map_position)
-      @chunk_renderer.render_tile_at_position(args, tile, chunk_position)
+      @renderer.render_tile_at_position(args, tile, chunk_position)
     end
     @full_redraw = false
   end
@@ -43,14 +42,14 @@ class TilemapChunk
 
   def dirty?
     @full_redraw ||
-      @tilemap.changed_positions.any? { |position| position.inside_rect? @map_rect }
+      @tilemap.changed_positions.any? { |position| position.inside_rect? @rect }
   end
 
   def calc_chunk_positions
     [].tap { |result|
-      (0...@map_rect.w).each do |x|
-        (0...@map_rect.h).each do |y|
-          result << [[x, y], [x + @map_rect.x, y + @map_rect.y]]
+      (0...@rect.w).each do |x|
+        (0...@rect.h).each do |y|
+          result << [[x, y], [x + @rect.x, y + @rect.y]]
         end
       end
     }
