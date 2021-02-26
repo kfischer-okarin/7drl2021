@@ -42,7 +42,10 @@ class TilemapView
         tilemap: @tilemap,
         rect: chunk_rect,
         renderer: ChunkRenderer.new(target: :"chunk_#{index}", tile_size: @tile_size)
-      )
+      ).tap { |chunk|
+        chunk.x = (chunk_rect.x - @origin.x) * @tile_size
+        chunk.y = (chunk_rect.y - @origin.y) * @tile_size
+      }
     }
   end
 
