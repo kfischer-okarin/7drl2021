@@ -59,6 +59,20 @@ class TilemapView
     end
   end
 
+  def self.difference(set1, set2)
+    new_elements = []
+    deleted_elements = set1.dup
+    set2.each do |element|
+      if set1.include? element
+        deleted_elements.delete element
+      else
+        new_elements << element
+      end
+    end
+
+    [new_elements, deleted_elements.to_a]
+  end
+
   def initialize(tilemap:, rect:, chunk_size:, tile_size:)
     @tilemap = tilemap
     @size = [rect.w, rect.h]
@@ -66,6 +80,7 @@ class TilemapView
     @tile_size = tile_size
     @chunks_by_rect = {}
     @chunk_rects = Set.new
+    @unused_chunks = []
     @next_chunk_index = 0
     self.origin = [rect.x, rect.y]
   end
@@ -74,44 +89,14 @@ class TilemapView
     return unless @origin != value
 
     @origin = value
-    new_rects = []
-    deleted_rects = @chunk_rects.dup
-    @rect_calculator.chunk_rects_for(@origin + @size).each do |rect|
-      if @chunk_rects.include? rect
-        deleted_rects.delete rect
-      else
-        new_rects << rect
-      end
-    end
-    new_rects.each do |rect|
-      @chunk_rects << rect
-    end
-    deleted_rects.each do |rect|
-      @chunk_rects.delete rect
-    end
-    deleted_rects = deleted_rects.to_a
+    new_rects, deleted_rects = TilemapView.difference @chunk_rects, @rect_calculator.chunk_rects_for(@origin + @size)
+    update_rects(new_rects, deleted_rects)
 
     new_rects.each do |rect|
-      chunk = if deleted_rects.empty?
-                TilemapChunk.new(
-                  tilemap: @tilemap,
-                  rect: rect,
-                  renderer: ChunkRenderer.new(target: :"chunk_#{@next_chunk_index}", tile_size: @tile_size)
-                ).tap {
-                  @next_chunk_index += 1
-                }
-              else
-                @chunks_by_rect.delete(deleted_rects.pop).tap { |reused_chunk|
-                  reused_chunk.rect = rect
-                }
-              end
-      @chunks_by_rect[rect] = chunk
+      add_new_chunk(rect)
     end
 
-    chunks.each do |chunk|
-      chunk.x = (chunk.rect.x - @origin.x) * @tile_size
-      chunk.y = (chunk.rect.y - @origin.y) * @tile_size
-    end
+    update_chunk_positions
   end
 
   def chunks
@@ -131,6 +116,46 @@ class TilemapView
   def draw_override(ffi_draw)
     chunks.each do |chunk|
       chunk.draw_override(ffi_draw)
+    end
+  end
+
+  private
+
+  def update_rects(new_rects, deleted_rects)
+    new_rects.each do |rect|
+      @chunk_rects << rect
+    end
+    deleted_rects.each do |rect|
+      @chunk_rects.delete rect
+      @unused_chunks << @chunks_by_rect.delete(rect)
+    end
+  end
+
+  def add_new_chunk(rect)
+    chunk = @unused_chunks.empty? ? build_new_chunk(rect) : reuse_unused_chunk(rect)
+    @chunks_by_rect[rect] = chunk
+  end
+
+  def build_new_chunk(rect)
+    TilemapChunk.new(
+      tilemap: @tilemap,
+      rect: rect,
+      renderer: ChunkRenderer.new(target: :"chunk_#{@next_chunk_index}", tile_size: @tile_size)
+    ).tap {
+      @next_chunk_index += 1
+    }
+  end
+
+  def reuse_unused_chunk(rect)
+    @unused_chunks.pop.tap { |chunk|
+      chunk.rect = rect
+    }
+  end
+
+  def update_chunk_positions
+    chunks.each do |chunk|
+      chunk.x = (chunk.rect.x - @origin.x) * @tile_size
+      chunk.y = (chunk.rect.y - @origin.y) * @tile_size
     end
   end
 end
