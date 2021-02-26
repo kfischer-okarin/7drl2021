@@ -12,9 +12,9 @@ def test_entities_and_floor_is_rendered(args, assert)
   (0...5).each do |x|
     (0...5).each do |y|
       expected_attributes = if x == 2 && y == 2
-                              TestHelper.tile_attributes(floor_tile, x: x * 24, y: y * 24)
+                              TestHelper.tile_attributes(floor_tile, x: x * 24, y: y * 24 + 72)
                             else
-                              TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24)
+                              TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24 + 72)
                             end
       assert.primitive_was_rendered!(expected_attributes, args)
     end
@@ -34,7 +34,7 @@ def test_world_view_can_be_rendered(args, assert)
   renderer.render_world(args, world_view)
 
   player_tile = Tile.for(:player)
-  expected_attributes = TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24)
+  expected_attributes = TestHelper.tile_attributes(player_tile, :r, :g, :b, :a, x: 2 * 24, y: 3 * 24 + 72)
   assert.primitive_was_rendered!(expected_attributes, args)
 end
 

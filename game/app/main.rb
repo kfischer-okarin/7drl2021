@@ -126,7 +126,7 @@ class Renderer
       chunk_size: [8, 8]
     ).tap { |result|
       result.x = 0
-      result.y = 0
+      result.y = 3 * 24
     }
   end
 end
@@ -208,7 +208,7 @@ def setup(args)
   20.times do
     world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor]
   end
-  $world_view = WorldView.new(world, w: 40, h: 30)
+  $world_view = WorldView.new(world, w: 40, h: 27)
   $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
   $renderer = Renderer.new
   $input = Input.new(args.state.player_id)
