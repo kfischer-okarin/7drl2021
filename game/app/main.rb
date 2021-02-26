@@ -6,14 +6,22 @@ require 'app/tilemap_chunk.rb'
 require 'app/resources.rb'
 require 'app/world.rb'
 
-module WorldTileRenderer
-  def self.render_tile(world, position)
-    entities = world.entities_at(position)
+class RenderedWorld
+  def initialize(world)
+    @world = world
+  end
+
+  def tile_at(position)
+    entities = @world.entities_at(position)
     if entities.empty?
       Tile.for(:floor)
     else
       Tile.for(entities[0][:type])
     end
+  end
+
+  def changed_positions
+    @world.changed_positions
   end
 end
 
@@ -96,7 +104,6 @@ class Renderer
         TilemapChunk.new(
           map_rect: [0, 0, 40, 30],
           tilemap: @tilemap ,
-          tile_renderer: WorldTileRenderer,
           chunk_renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size)
         )
       ]
@@ -126,7 +133,7 @@ class Renderer
   end
 
   def render_world(args, world)
-    @renderer ||= TilemapRenderer.new(tilemap: world, tile_size: 24, size: [world.w, world.h])
+    @renderer ||= TilemapRenderer.new(tilemap: RenderedWorld.new(world), tile_size: 24, size: [world.w, world.h])
     @renderer.origin = world.origin
     @renderer.tick(args)
     world.changed_positions.clear

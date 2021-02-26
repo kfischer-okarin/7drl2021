@@ -2,9 +2,8 @@ class TilemapChunk
   attr_accessor :x, :y
   attr_reader :map_rect
 
-  def initialize(map_rect:, tilemap:, tile_renderer:, chunk_renderer:)
+  def initialize(tilemap:, map_rect:, chunk_renderer:)
     @tilemap = tilemap
-    @tile_renderer = tile_renderer
     @chunk_renderer = chunk_renderer
     self.map_rect = map_rect
     @full_redraw = true
@@ -26,7 +25,7 @@ class TilemapChunk
 
     @chunk_renderer.init_render(args, self)
     @chunk_positions.each do |chunk_position, map_position|
-      tile = @tile_renderer.render_tile(@tilemap, map_position)
+      tile = @tilemap.tile_at(map_position)
       @chunk_renderer.render_tile_at_position(args, tile, chunk_position)
     end
     @full_redraw = false
