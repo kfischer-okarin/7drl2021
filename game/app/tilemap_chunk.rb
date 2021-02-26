@@ -41,8 +41,7 @@ class TilemapChunk
   private
 
   def dirty?
-    @full_redraw ||
-      @tilemap.changed_positions.any? { |position| position.inside_rect? @rect }
+    @full_redraw || @tilemap.changes_in_rect?(rect)
   end
 
   def calc_chunk_positions

@@ -8,10 +8,14 @@ module TilemapChunkTest
   end
 
   class Tilemap
-    attr_accessor :changed_positions
+    attr_accessor :changes_in_rect
 
     def initialize
-      @changed_positions = Set.new
+      @changes_in_rect = false
+    end
+
+    def changes_in_rect?(_rect)
+      @changes_in_rect
     end
 
     def tile_at(position)
@@ -64,7 +68,7 @@ def test_update_renders_all_tiles_when_tile_in_area_changes(args, assert)
   chunk.tick(args)
   renderer.clear
 
-  tilemap.changed_positions = Set.new([1, 1])
+  tilemap.changes_in_rect = true
   chunk.tick(args)
   assert.equal! renderer.rendered, Set.new(
     [{ position: [0, 0] }, [0, 0]],
@@ -82,7 +86,7 @@ def test_update_renders_nothing_when_tile_outside_area_changes(args, assert)
   chunk.tick(args)
   renderer.clear
 
-  tilemap.changed_positions = Set.new([5, 5])
+  tilemap.changes_in_rect = false
   chunk.tick(args)
   assert.equal! renderer.rendered, Set.new
 end

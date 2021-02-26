@@ -20,8 +20,8 @@ class RenderedWorld
     end
   end
 
-  def changed_positions
-    @world.changed_positions
+  def changes_in_rect?(rect)
+    @world.changed_positions.any? { |position| position.inside_rect? rect }
   end
 end
 
