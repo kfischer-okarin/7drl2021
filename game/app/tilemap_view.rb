@@ -24,35 +24,87 @@ class TilemapView
     end
   end
 
-  attr_reader :chunks
-
   def initialize(tilemap:, rect:, chunk_size:, tile_size:)
     @tilemap = tilemap
     @size = [rect.w, rect.h]
     @chunk_size = chunk_size
     @tile_size = tile_size
+    @chunks_by_rect = {}
+    @chunk_rects = Set.new
+    @next_chunk_index = 0
     self.origin = [rect.x, rect.y]
   end
 
   def origin=(value)
+    return unless @origin != value
+
     @origin = value
-    @chunk_rects = calc_chunk_rects(@origin + @size, @chunk_size)
-    @chunks = @chunk_rects.map_with_index { |chunk_rect, index|
-      TilemapChunk.new(
-        tilemap: @tilemap,
-        rect: chunk_rect,
-        renderer: ChunkRenderer.new(target: :"chunk_#{index}", tile_size: @tile_size)
-      ).tap { |chunk|
-        chunk.x = (chunk_rect.x - @origin.x) * @tile_size
-        chunk.y = (chunk_rect.y - @origin.y) * @tile_size
-      }
-    }
+    new_rects = []
+    deleted_rects = @chunk_rects.dup
+    calc_chunk_rects(@origin + @size, @chunk_size).each do |rect|
+      if @chunk_rects.include? rect
+        deleted_rects.delete rect
+      else
+        new_rects << rect
+      end
+    end
+    new_rects.each do |rect|
+      @chunk_rects << rect
+    end
+    deleted_rects.each do |rect|
+      @chunk_rects.delete rect
+    end
+    deleted_rects = deleted_rects.to_a
+
+    new_rects.each do |rect|
+      chunk = if deleted_rects.empty?
+                TilemapChunk.new(
+                  tilemap: @tilemap,
+                  rect: rect,
+                  renderer: ChunkRenderer.new(target: :"chunk_#{@next_chunk_index}", tile_size: @tile_size)
+                ).tap {
+                  @next_chunk_index += 1
+                }
+              else
+                @chunks_by_rect.delete(deleted_rects.pop).tap { |reused_chunk|
+                  reused_chunk.rect = rect
+                }
+              end
+      @chunks_by_rect[rect] = chunk
+    end
+
+    chunks.each do |chunk|
+      chunk.x = (chunk.rect.x - @origin.x) * @tile_size
+      chunk.y = (chunk.rect.y - @origin.y) * @tile_size
+    end
   end
+
+  def chunks
+    @chunks_by_rect.each_value
+  end
+
+  def tick(args)
+    chunks.each do |chunk|
+      chunk.tick(args)
+    end
+  end
+
+  def primitive_marker
+    :sprite
+  end
+
+  def draw_override(ffi_draw)
+    chunks.each do |chunk|
+      chunk.draw_override(ffi_draw)
+    end
+  end
+
+  private
 
   def calc_chunk_rects(rect, chunk_size)
     next_origin = bottom_left_chunk_origin(rect, chunk_size)
     left = next_origin.x
-    [].tap { |result|
+    Set.new.tap { |result|
       loop do
         while next_origin.x < rect.right
           result << chunk_rect_at(next_origin, chunk_size)

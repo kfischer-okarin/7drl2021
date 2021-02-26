@@ -16,8 +16,26 @@ class Set
     @values.size
   end
 
+  def -(other)
+    Set.new.tap { |result|
+      each do |element|
+        result << element unless other.include? element
+      end
+    }
+  end
+
+  def dup
+    Set.new(*to_a)
+  end
+
   def <<(element)
     @values[element] = true
+    self
+  end
+
+  def delete(element)
+    @values.delete element
+    self
   end
 
   def include?(element)
