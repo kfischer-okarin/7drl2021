@@ -1,5 +1,5 @@
 module TilemapChunkTest
-  def self.chunk_with(tilemap: nil, renderer: nil, rect:)
+  def self.chunk_with(rect:, tilemap: nil, renderer: nil)
     TilemapChunk.new(
       rect: rect,
       tilemap: tilemap || Tilemap.new,
