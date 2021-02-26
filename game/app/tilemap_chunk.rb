@@ -1,7 +1,18 @@
+# Pre-rendered chunk of a big tilemap that only re-renders if there was any change inside the chunk
 class TilemapChunk
   attr_accessor :x, :y
   attr_reader :rect
 
+  # @param [#tile_at, #changes_in_rect?] tilemap
+  #   - tile_at([x, y]) => Primitive
+  #   - changes_in_rect?([x, y, w, h])
+  #       Rect is in map coordinates
+  # @param [#path, #render_size, #init_render, #render_tile_at_position] renderer
+  #   - render_size(tilemap_chunk) => [w, h] in pixels
+  #   - init_render(args, tilemap_chunk)
+  #       One time processing before drawing tiless
+  #   - render_tile_at_position(args, tile, [x, y])
+  #       Position is relative to chunk origin in tile coordinates
   def initialize(tilemap:, rect:, renderer:)
     @tilemap = tilemap
     @renderer = renderer
