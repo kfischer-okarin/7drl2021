@@ -1,7 +1,7 @@
 require 'app/set.rb'
 
 class World
-  attr_reader :changed_positions
+  attr_reader :changed_positions, :messages
 
   def initialize(entities: nil, next_entity_id: 0)
     @entities = entities || {}
@@ -13,6 +13,7 @@ class World
     end
     @next_entity_id = next_entity_id
     @changed_positions = Set.new
+    @messages = []
   end
 
   def entities
@@ -117,6 +118,8 @@ class World
 
       velocity.x = 0
       velocity.y = 0
+
+      @messages.unshift "You run into a #{blocking_entity[:type]}" if entity[:type] == :player
     end
   end
 

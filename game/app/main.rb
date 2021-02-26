@@ -226,7 +226,9 @@ def tick(args)
 
   args.outputs.background_color = [0, 0, 0]
   $renderer.render_world(args, $world_view)
-  $renderer.render_string(args, 'You find a red gemstone', x: 24, y: 24)
+  world.messages[0..2].each_with_index do |message, index|
+    $renderer.render_string(args, message, x: 24, y: index * 24, a: 255 - 90 * index)
+  end
 end
 
 $gtk.reset
