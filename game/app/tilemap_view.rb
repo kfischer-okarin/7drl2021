@@ -73,16 +73,26 @@ class TilemapView
     [new_elements, deleted_elements.to_a]
   end
 
-  def initialize(tilemap:, rect:, chunk_size:, tile_size:)
+  attr_accessor :x, :y
+
+  def initialize(name:, tilemap:, rect:, chunk_size:, tile_size:)
+    @name = name
     @tilemap = tilemap
     @size = [rect.w, rect.h]
-    @rect_calculator = RectCalculator.new(chunk_size)
     @tile_size = tile_size
+    @w = rect.w * @tile_size
+    @h = rect.h * @tile_size
+    @rect_calculator = RectCalculator.new(chunk_size)
     @chunks_by_rect = {}
     @chunk_rects = Set.new
     @unused_chunks = []
     @next_chunk_index = 0
+    @full_redraw = false
     self.origin = [rect.x, rect.y]
+  end
+
+  def path
+    @name
   end
 
   def origin=(value)
@@ -97,6 +107,7 @@ class TilemapView
     end
 
     update_chunk_positions
+    @full_redraw = true
   end
 
   def chunks
@@ -107,6 +118,13 @@ class TilemapView
     chunks.each do |chunk|
       chunk.tick(args)
     end
+    return unless @full_redraw
+
+    target = args.outputs[@name]
+    target.width = @w
+    target.height = @h
+    target.primitives << chunks
+    @full_redraw = false
   end
 
   def primitive_marker
@@ -114,9 +132,7 @@ class TilemapView
   end
 
   def draw_override(ffi_draw)
-    chunks.each do |chunk|
-      chunk.draw_override(ffi_draw)
-    end
+    ffi_draw.draw_sprite @x, @y, @w, @h, path.to_s
   end
 
   private
@@ -140,7 +156,7 @@ class TilemapView
     TilemapChunk.new(
       tilemap: @tilemap,
       rect: rect,
-      renderer: ChunkRenderer.new(target: :"chunk_#{@next_chunk_index}", tile_size: @tile_size)
+      renderer: ChunkRenderer.new(target: :"#{@name}_#{@next_chunk_index}", tile_size: @tile_size)
     ).tap {
       @next_chunk_index += 1
     }
