@@ -95,48 +95,15 @@ class WorldView
 end
 
 class Renderer
-  class TilemapRenderer
-    def initialize(tilemap:, tile_size:, size:)
-      @tilemap = tilemap
-      @tile_size = tile_size
-      @size = size
-      @chunk_size = 8
-      @chunks = [
-        TilemapChunk.new(
-          rect: [0, 0, 40, 30],
-          tilemap: @tilemap ,
-          renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size)
-        )
-      ]
-      self.origin = [0, 0]
-    end
-
-    def origin=(value)
-      return if @origin == value
-
-      @origin = value
-      @chunks.each do |chunk|
-        chunk.x = (chunk.rect.x - value.x) * @tile_size
-        chunk.y = (chunk.rect.y - value.y) * @tile_size
-      end
-    end
-
-    def tick(args)
-      @chunks.each do |chunk|
-        chunk.tick(args)
-      end
-      args.outputs.primitives << @chunks
-    end
-  end
-
   def initialize
     @entity_tiles = {}
   end
 
   def render_world(args, world)
-    @renderer ||= TilemapRenderer.new(tilemap: RenderedWorld.new(world), tile_size: 24, size: [world.w, world.h])
+    @renderer ||= build_view(world)
     @renderer.origin = world.origin
     @renderer.tick(args)
+    args.outputs.primitives << @renderer
     world.changed_positions.clear
   end
 
@@ -145,6 +112,21 @@ class Renderer
       Tile.for_letter(char).merge(attributes).tap { |tile|
         tile.x += index * 16
       }
+    }
+  end
+
+  private
+
+  def build_view(world)
+    TilemapView.new(
+      name: :map_view,
+      tilemap: RenderedWorld.new(world),
+      rect: [0, 0, world.w, world.h],
+      tile_size: 24,
+      chunk_size: [8, 8]
+    ).tap { |result|
+      result.x = 0
+      result.y = 0
     }
   end
 end
