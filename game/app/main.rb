@@ -18,23 +18,24 @@ module WorldTileRenderer
 end
 
 class ChunkRenderer
-  attr_reader :chunk_path, :tile_size
+  attr_reader :path, :tile_size
 
-  def initialize(target:, tile_size:, chunk_w:, chunk_h:)
-    @chunk_path = target
+  def initialize(target:, tile_size:)
+    @path = target
     @tile_size = tile_size
-    @chunk_w = chunk_w
-    @chunk_h = chunk_h
   end
 
-  def init_render(args)
-    target = args.outputs[@chunk_path]
-    target.width = @chunk_w * @tile_size
-    target.height = @chunk_h * @tile_size
+  def render_size(chunk)
+    [chunk.map_rect.w * @tile_size, chunk.map_rect.h * @tile_size]
+  end
+
+  def init_render(args, chunk)
+    target = args.outputs[@path]
+    target.width, target.height = render_size(chunk)
   end
 
   def render_tile_at_position(args, tile, position)
-    target = args.outputs[@chunk_path]
+    target = args.outputs[@path]
     tile.x = position.x * @tile_size
     tile.y = position.y * @tile_size
     target.primitives << tile
@@ -96,7 +97,7 @@ class Renderer
           map_rect: [0, 0, 40, 30],
           tilemap: @tilemap ,
           tile_renderer: WorldTileRenderer,
-          chunk_renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size, chunk_w: size.x, chunk_h: size.y)
+          chunk_renderer: ChunkRenderer.new(target: :chunk, tile_size: @tile_size)
         )
       ]
       self.origin = [0, 0]

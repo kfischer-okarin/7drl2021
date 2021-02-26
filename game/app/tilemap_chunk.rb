@@ -1,5 +1,6 @@
 class TilemapChunk
-  attr_accessor :x, :y, :map_rect
+  attr_accessor :x, :y
+  attr_reader :map_rect
 
   def initialize(map_rect:, tilemap:, tile_renderer:, chunk_renderer:)
     @tilemap = tilemap
@@ -10,22 +11,20 @@ class TilemapChunk
   end
 
   def path
-    @chunk_renderer.chunk_path
+    @chunk_renderer.path
   end
 
   def map_rect=(value)
     @map_rect = value
     @chunk_positions = calc_chunk_positions
-    @w = @chunk_renderer.tile_size * @map_rect.w
-    @h = @chunk_renderer.tile_size * @map_rect.h
+    @w, @h = @chunk_renderer.render_size(self)
     @full_redraw = true
   end
 
   def tick(args)
     return unless dirty?
 
-
-    @chunk_renderer.init_render(args)
+    @chunk_renderer.init_render(args, self)
     @chunk_positions.each do |chunk_position, map_position|
       tile = @tile_renderer.render_tile(@tilemap, map_position)
       @chunk_renderer.render_tile_at_position(args, tile, chunk_position)
