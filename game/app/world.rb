@@ -45,6 +45,7 @@ class World
   end
 
   def tick
+    handle_collision
     handle_movement
   end
 
@@ -98,16 +99,34 @@ class World
     @entities_by_position[entity[:position]].delete(entity)
   end
 
-  def handle_movement
-    @entities_by_component[:velocity].each do |entity|
-      velocity = entity[:velocity]
-      next if velocity.x.zero? && velocity.y.zero?
+  def moving_entities
+    Enumerator.new do |yielder|
+      @entities_by_component[:velocity].each do |entity|
+        velocity = entity[:velocity]
+        position = entity[:position]
+        new_position = [position.x + velocity.x, position.y + velocity.y]
+        yielder.yield(entity, velocity, new_position) unless velocity.x.zero? && velocity.y.zero?
+      end
+    end
+  end
 
+  def handle_collision
+    moving_entities.each do |entity, velocity, new_position|
+      blocking_entity = entities_at(new_position).find { |other_entity| other_entity[:block_movement] }
+      next unless blocking_entity
+
+      velocity.x = 0
+      velocity.y = 0
+    end
+  end
+
+  def handle_movement
+    moving_entities.each do |entity, _velocity, new_position|
       position = entity[:position]
       @changed_positions << position.dup
       remove_from_position_index entity
-      position.x += velocity.x
-      position.y += velocity.y
+      position.x = new_position.x
+      position.y = new_position.y
       @changed_positions << position.dup
       index_by_position entity
     end

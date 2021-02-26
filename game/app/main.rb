@@ -206,7 +206,7 @@ def setup(args)
   args.state.world = world
   args.state.player_id = world.add_entity :player, position: [2, 5], velocity: [0, 0]
   20.times do
-    world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor]
+    world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor], block_movement: true
   end
   $world_view = WorldView.new(world, w: 40, h: 27)
   $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
