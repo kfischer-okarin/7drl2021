@@ -36,7 +36,7 @@ module TilemapChunkTest
       [1, 1]
     end
 
-    def render_tile_at_position(_args, tile, position)
+    def render_tile_at(_args, tile, position)
       @rendered << [tile, position]
     end
 

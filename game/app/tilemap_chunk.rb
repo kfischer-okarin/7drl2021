@@ -3,6 +3,16 @@ class TilemapChunk
   attr_accessor :x, :y
   attr_reader :rect
 
+  def self.relative_and_absolute_coordinates(rect)
+    [].tap { |result|
+      (0...rect.w).each do |x|
+        (0...rect.h).each do |y|
+          result << [[x, y], [x + rect.x, y + rect.y]]
+        end
+      end
+    }
+  end
+
   # @param [#tile_at, #changes_in_rect?] tilemap
   #   - tile_at([x, y]) => Primitive
   #   - changes_in_rect?([x, y, w, h])
@@ -11,7 +21,7 @@ class TilemapChunk
   #   - render_size(tilemap_chunk) => [w, h] in pixels
   #   - init_render(args, tilemap_chunk)
   #       One time processing before drawing tiless
-  #   - render_tile_at_position(args, tile, [x, y])
+  #   - render_tile_at(args, tile, [x, y])
   #       Position is relative to chunk origin in tile coordinates
   def initialize(tilemap:, rect:, renderer:)
     @tilemap = tilemap
@@ -25,7 +35,7 @@ class TilemapChunk
 
   def rect=(value)
     @rect = value
-    @chunk_positions = calc_chunk_positions
+    @relative_and_absolute_coordinates = TilemapChunk.relative_and_absolute_coordinates(@rect)
     @w, @h = @renderer.render_size(self)
     @full_redraw = true
   end
@@ -34,9 +44,9 @@ class TilemapChunk
     return unless dirty?
 
     @renderer.init_render(args, self)
-    @chunk_positions.each do |chunk_position, map_position|
-      tile = @tilemap.tile_at(map_position)
-      @renderer.render_tile_at_position(args, tile, chunk_position)
+    @relative_and_absolute_coordinates.each do |relative_coordinate, absolute_coordinate|
+      tile = @tilemap.tile_at(absolute_coordinate)
+      @renderer.render_tile_at(args, tile, relative_coordinate)
     end
     @full_redraw = false
   end
@@ -53,15 +63,5 @@ class TilemapChunk
 
   def dirty?
     @full_redraw || @tilemap.changes_in_rect?(rect)
-  end
-
-  def calc_chunk_positions
-    [].tap { |result|
-      (0...@rect.w).each do |x|
-        (0...@rect.h).each do |y|
-          result << [[x, y], [x + @rect.x, y + @rect.y]]
-        end
-      end
-    }
   end
 end

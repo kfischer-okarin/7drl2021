@@ -42,7 +42,7 @@ class ChunkRenderer
     target.width, target.height = render_size(chunk)
   end
 
-  def render_tile_at_position(args, tile, position)
+  def render_tile_at(args, tile, position)
     target = args.outputs[@path]
     tile.x = position.x * @tile_size
     tile.y = position.y * @tile_size
