@@ -24,10 +24,45 @@ class TilemapView
     end
   end
 
+  class RectCalculator
+    def initialize(chunk_size)
+      @chunk_size = chunk_size
+    end
+
+    def chunk_rects_for(rect)
+      next_origin = bottom_left_chunk_origin(rect)
+      left = next_origin.x
+      Set.new.tap { |result|
+        loop do
+          while next_origin.x < rect.right
+            result << build_rect(next_origin)
+            next_origin.x += @chunk_size.x
+          end
+          next_origin.x = left
+          next_origin.y += @chunk_size.y
+          break unless next_origin.y < rect.top
+        end
+      }
+    end
+
+    private
+
+    def bottom_left_chunk_origin(rect)
+      [
+        rect.x - (rect.x % @chunk_size.x),
+        rect.y - (rect.y % @chunk_size.y)
+      ]
+    end
+
+    def build_rect(origin)
+      [origin.x, origin.y, @chunk_size.x, @chunk_size.y]
+    end
+  end
+
   def initialize(tilemap:, rect:, chunk_size:, tile_size:)
     @tilemap = tilemap
     @size = [rect.w, rect.h]
-    @chunk_size = chunk_size
+    @rect_calculator = RectCalculator.new(chunk_size)
     @tile_size = tile_size
     @chunks_by_rect = {}
     @chunk_rects = Set.new
@@ -41,7 +76,7 @@ class TilemapView
     @origin = value
     new_rects = []
     deleted_rects = @chunk_rects.dup
-    calc_chunk_rects(@origin + @size, @chunk_size).each do |rect|
+    @rect_calculator.chunk_rects_for(@origin + @size).each do |rect|
       if @chunk_rects.include? rect
         deleted_rects.delete rect
       else
@@ -97,34 +132,5 @@ class TilemapView
     chunks.each do |chunk|
       chunk.draw_override(ffi_draw)
     end
-  end
-
-  private
-
-  def calc_chunk_rects(rect, chunk_size)
-    next_origin = bottom_left_chunk_origin(rect, chunk_size)
-    left = next_origin.x
-    Set.new.tap { |result|
-      loop do
-        while next_origin.x < rect.right
-          result << chunk_rect_at(next_origin, chunk_size)
-          next_origin.x += chunk_size.x
-        end
-        next_origin.x = left
-        next_origin.y += chunk_size.y
-        break unless next_origin.y < rect.top
-      end
-    }
-  end
-
-  def bottom_left_chunk_origin(rect, chunk_size)
-    [
-      rect.x - (rect.x % chunk_size.x),
-      rect.y - (rect.y % chunk_size.y)
-    ]
-  end
-
-  def chunk_rect_at(origin, chunk_size)
-    [origin.x, origin.y, chunk_size.x, chunk_size.y]
   end
 end
