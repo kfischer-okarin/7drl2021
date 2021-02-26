@@ -32,17 +32,26 @@ module GTK
         [render_target.target, render_target.primitives]
       }.to_h
 
-      all_primitives = args.outputs.primitives.map { |primitive|
-        path = primitive.path.to_s
-        next primitive unless render_target_primitives.key?(path)
+      all_primitives = args.outputs.primitives
+      replaced = false
 
-        render_target_primitives[path].map { |target_primitive|
-          target_primitive.dup.tap { |translated|
-            translated.x += primitive.x
-            translated.y += primitive.y
+      loop do
+        all_primitives = all_primitives.map { |primitive|
+          path = primitive.path.to_s
+          next primitive unless render_target_primitives.key?(path)
+
+          replaced = true
+          render_target_primitives[path].map { |target_primitive|
+            target_primitive.dup.tap { |translated|
+              translated.x += primitive.x
+              translated.y += primitive.y
+            }
           }
-        }
-      }.flatten(1)
+        }.flatten(1)
+
+        break unless replaced
+        replaced = false
+      end
 
       return if all_primitives.any? { |primitive|
         primitive_attributes.keys.all? { |attribute|
