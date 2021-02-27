@@ -1,3 +1,5 @@
+require 'tests/test_helper.rb'
+
 def test_velocity_causes_move(_args, assert)
   world = World.new
   player_id = world.add_entity :player, position: [2, 5], velocity: [0, 0]

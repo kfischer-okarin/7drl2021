@@ -1,5 +1,3 @@
-require 'app/set.rb'
-
 class World
   attr_reader :changed_positions, :messages
 

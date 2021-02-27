@@ -1,9 +1,9 @@
 require 'lib/debug_mode.rb'
 require 'lib/extra_keys.rb'
 require 'lib/resources.rb'
+require 'lib/set.rb'
+require 'lib/tilemap_view/require.rb'
 
-require 'app/tilemap_chunk.rb'
-require 'app/tilemap_view.rb'
 require 'app/resources.rb'
 require 'app/world.rb'
 

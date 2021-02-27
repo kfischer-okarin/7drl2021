@@ -153,7 +153,7 @@ class TilemapView
   end
 
   def build_new_chunk(rect)
-    TilemapChunk.new(
+    Chunk.new(
       tilemap: @tilemap,
       rect: rect,
       renderer: ChunkRenderer.new(target: :"#{@name}_#{@next_chunk_index}", tile_size: @tile_size)

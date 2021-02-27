@@ -1,6 +1,6 @@
 module TilemapChunkTest
   def self.chunk_with(rect:, tilemap: nil, renderer: nil)
-    TilemapChunk.new(
+    TilemapView::Chunk.new(
       rect: rect,
       tilemap: tilemap || Tilemap.new,
       renderer: renderer || ChunkRenderer.new
