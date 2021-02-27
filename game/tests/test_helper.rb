@@ -43,8 +43,8 @@ module GTK
           replaced = true
           render_target_primitives[path].map { |target_primitive|
             target_primitive.dup.tap { |translated|
-              translated.x += primitive.x
-              translated.y += primitive.y
+              translated.x = (translated.x || 0) + (primitive.x || 0)
+              translated.y = (translated.y || 0) + (primitive.y || 0)
             }
           }
         }.flatten(1)
