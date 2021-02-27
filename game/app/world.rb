@@ -39,19 +39,9 @@ class World
     @entities[id][property]
   end
 
-  def position_of(entity)
-    entity[:position]
-  end
-
   def tick
     handle_collision
     handle_movement
-  end
-
-  def entities_inside_rect(rect)
-    entities.select { |entity|
-      position_of(entity).inside_rect? rect
-    }
   end
 
   def entities_at(position)

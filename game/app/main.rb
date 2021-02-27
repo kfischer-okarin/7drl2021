@@ -51,7 +51,7 @@ def setup(args)
   $world_view = WorldView.new(world, size: [40, 27])
   $world_view.x = 0
   $world_view.y = 3 * 24
-  $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
+  $world_view.center_on(world.get_entity_property(args.state.player_id, :position))
   $renderer = Renderer.new
   $input = Input.new(args.state.player_id)
 end
@@ -63,7 +63,7 @@ def tick(args)
   if $input.any?(args)
     $input.apply_to(args, world)
     world.tick
-    $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
+    $world_view.center_on(world.get_entity_property(args.state.player_id, :position))
   end
 
   args.outputs.background_color = [0, 0, 0]
