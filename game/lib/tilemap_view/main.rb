@@ -74,6 +74,7 @@ class TilemapView
   end
 
   attr_accessor :x, :y
+  attr_reader :origin
 
   def initialize(name:, tilemap:, rect:, chunk_size:, tile_size:)
     @name = name

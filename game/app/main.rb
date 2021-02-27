@@ -6,150 +6,15 @@ require 'lib/tilemap_view/require.rb'
 
 require 'app/resources.rb'
 require 'app/world.rb'
-
-class RenderedWorld
-  def initialize(world)
-    @world = world
-  end
-
-  def tile_at(position)
-    entities = @world.entities_at(position)
-    if entities.empty?
-      Tile.for(:floor)
-    else
-      Tile.for(entities[0][:type])
-    end
-  end
-
-  def changes_in_rect?(rect)
-    @world.changed_positions.any? { |position| position.inside_rect? rect }
-  end
-end
-
-class WorldView
-  attr_reader :origin, :w, :h
-
-  def initialize(world, w:, h:)
-    @world = world
-    @w = w
-    @h = h
-    self.origin = [0, 0]
-  end
-
-  def origin=(value)
-    @origin = value
-    @bounds = [@origin.x, @origin.y, @w, @h]
-  end
-
-  def entities
-    (0...@w).map { |x|
-      (0...@h).map { |y|
-        position = [x + @origin.x, y + @origin.y]
-        at_position = @world.entities_at(position)
-        at_position.empty? ? { type: :floor, position: position } : at_position
-      }
-    }.flatten
-  end
-
-  def entities_at(position)
-    @world.entities_at(position)
-  end
-
-  def changed_positions
-    @world.changed_positions
-  end
-
-  def position_of(entity)
-    world_position = @world.position_of(entity)
-    [world_position.x - @origin.x, world_position.y - @origin.y]
-  end
-
-  def center_on(position)
-    self.origin = [position.x - @w.idiv(2), position.y - @h.idiv(2)]
-  end
-end
+require 'app/world_view.rb'
 
 class Renderer
-  def initialize
-    @entity_tiles = {}
-  end
-
-  def render_world(args, world)
-    @renderer ||= build_view(world)
-    @renderer.origin = world.origin
-    @renderer.tick(args)
-    args.outputs.primitives << @renderer
-    world.changed_positions.clear
-  end
-
   def render_string(args, string, attributes)
     args.outputs.primitives << string.chars.map_with_index { |char, index|
       Tile.for_letter(char).merge(attributes).tap { |tile|
         tile.x += index * 16
       }
     }
-  end
-
-  private
-
-  def build_view(world)
-    TilemapView.new(
-      name: :map_view,
-      tilemap: RenderedWorld.new(world),
-      rect: [0, 0, world.w, world.h],
-      tile_size: 24,
-      chunk_size: [8, 8]
-    ).tap { |result|
-      result.x = 0
-      result.y = 3 * 24
-    }
-  end
-end
-
-class Tile
-  class << self
-    def at_position(position)
-      {
-        path: Resources.sprites.tileset, w: 24, h: 24,
-        source_w: 24, source_h: 24, source_x: position.x * 24, source_y: position.y * 24
-      }
-    end
-
-    def letter_tile_position(letter)
-      case letter
-      when 'A'..'O'
-        x = letter.ord - 'A'.ord + 1
-        [x, 11]
-      when 'P'..'Z'
-        x = letter.ord - 'P'.ord
-        [x, 10]
-      when 'a'..'o'
-        x = letter.ord - 'a'.ord + 1
-        [x, 9]
-      when 'p'..'z'
-        x = letter.ord - 'p'.ord
-        [x, 8]
-      when '.'
-        [14, 13]
-      else
-        [0, 15]
-      end
-    end
-
-    def for_letter(letter)
-      at_position(letter_tile_position(letter))
-    end
-
-    def for(entity_type)
-      case entity_type
-      when :player
-        at_position([0, 11]).merge(r: 218, g: 212, b: 94)
-      when :tree
-        at_position([5, 15]).merge(r: 52, g: 101, b: 36)
-      when :floor
-        for_letter('.').merge(r: 255, g: 255, b: 255)
-      end
-    end
   end
 end
 
@@ -183,7 +48,9 @@ def setup(args)
   20.times do
     world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor], block_movement: true
   end
-  $world_view = WorldView.new(world, w: 40, h: 27)
+  $world_view = WorldView.new(world, size: [40, 27])
+  $world_view.x = 0
+  $world_view.y = 3 * 24
   $world_view.center_on(world.position_of(world.entity(args.state.player_id)))
   $renderer = Renderer.new
   $input = Input.new(args.state.player_id)
@@ -200,7 +67,9 @@ def tick(args)
   end
 
   args.outputs.background_color = [0, 0, 0]
-  $renderer.render_world(args, $world_view)
+  $world_view.tick(args)
+  args.outputs.primitives << $world_view
+  world.changed_positions.clear
   world.messages[0..2].each_with_index do |message, index|
     $renderer.render_string(args, message, x: 24, y: index * 24, a: 255 - 90 * index)
   end
