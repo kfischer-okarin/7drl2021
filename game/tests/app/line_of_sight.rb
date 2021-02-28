@@ -27,6 +27,18 @@ def test_line_of_sight_without_obstacle(_args, assert)
   )
 end
 
+def test_line_of_sight_at_corner(_args, assert)
+  map = LineOfSightTest::Map.new
+  map.block_sight([1, 0])
+  line_of_sight = LineOfSight.new(map, from: [0, 0], area: [0, 0, 3, 3])
+
+  assert.equal! line_of_sight.visible_positions, Set.new(
+    [0, 2], [1, 2], [2, 2],
+    [0, 1], [1, 1], [2, 1],
+    [0, 0], [1, 0]
+  )
+end
+
 # Line intersection tests
 
 def test_horizontal_line_parallel_to_horizontal_line(_args, assert)
