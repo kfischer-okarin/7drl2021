@@ -63,5 +63,16 @@ module GTK
 
       raise "Expected\n\n#{primitive_array_string}\n\nto contain a primitive with attributes #{primitive_attributes}.\n#{message}"
     end
+
+    def contains_exactly!(collection, elements, message = nil)
+      @assertion_performed = true
+
+      base_error = "Expected\n  #{collection.inspect}\nto contain exactly elements:\n  #{elements.inspect}"
+      raise "#{base_error}\nBut they had different sizes\n#{message}" unless collection.size == elements.size
+
+      elements.each do |element|
+        raise "#{base_error}\nBut it didn't contain #{element.inspect}\n#{message}" unless collection.include? element
+      end
+    end
   end
 end
