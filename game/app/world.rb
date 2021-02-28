@@ -14,6 +14,10 @@ class World
     @messages = []
   end
 
+  def entities_with(component)
+    @entities_by_component[component]
+  end
+
   def entities
     @entities.values
   end
@@ -105,7 +109,7 @@ class World
   end
 
   def handle_movement
-    @entities_by_component[:velocity].each do |entity|
+    entities_with(:velocity).each do |entity|
       handle_collision(entity)
       velocity = entity[:velocity]
       next if velocity.zero?
