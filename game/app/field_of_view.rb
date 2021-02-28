@@ -12,6 +12,11 @@ class FieldOfView
   private
 
   def covered_positions(obstacle)
+    return ((obstacle.x + 1)...@area.right).map { |x| [x, @from.y] } if obstacle.x > @from.x
+    return (@area.left...obstacle.x).map { |x| [x, @from.y] } if obstacle.x < @from.x
+    return ((obstacle.y + 1)...@area.top).map { |y| [@from.x, y] } if obstacle.y > @from.y
+    return (@area.bottom...obstacle.y).map { |y| [@from.x, y] } if obstacle.y < @from.y
+
     []
   end
 
