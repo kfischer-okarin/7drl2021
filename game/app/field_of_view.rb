@@ -1,35 +1,47 @@
 class FieldOfView
-  attr_reader :visible_positions
-
   def initialize(map, from:, area:)
     @map = map
     @from = from
     @area = area
     @obstacles = sort_by_distance(map.blocking_positions_in(@area))
-    @visible_positions = calc_visible_positions
+    @visible = (0...@area.w).map {
+      (0...@area.h).map { true }
+    }
+    calc_visible_positions
+  end
+
+  def visible?(x, y)
+    (@visible[x - @area.x] || [])[y - @area.y]
   end
 
   private
 
-  def covered_positions(obstacle)
-    return ((obstacle.x + 1)...@area.right).map { |x| [x, @from.y] } if obstacle.x > @from.x
-    return (@area.left...obstacle.x).map { |x| [x, @from.y] } if obstacle.x < @from.x
-    return ((obstacle.y + 1)...@area.top).map { |y| [@from.x, y] } if obstacle.y > @from.y
-    return (@area.bottom...obstacle.y).map { |y| [@from.x, y] } if obstacle.y < @from.y
-
-    []
-  end
-
   def calc_visible_positions
-    Set.new(*@area.each_position).tap { |result|
-      @obstacles.each do |obstacle|
-        next unless result.include? obstacle
+    @obstacles.each do |obstacle|
+      next unless visible?(obstacle.x, obstacle.y)
 
-        covered_positions(obstacle).each do |covered_position|
-          result.delete covered_position
+      if obstacle.x > @from.x
+        ((obstacle.x + 1)...@area.right).each do |x|
+          set_invisible(x, @from.y)
+        end
+      elsif obstacle.x < @from.x
+        (@area.left...obstacle.x).each do |x|
+          set_invisible(x, @from.y)
+        end
+      elsif obstacle.y > @from.y
+        ((obstacle.y + 1)...@area.top).each do |y|
+          set_invisible(@from.x, y)
+        end
+      elsif obstacle.y < @from.y
+        (@area.bottom...obstacle.y).each do |y|
+          set_invisible(@from.x, y)
         end
       end
-    }
+    end
+  end
+
+  def set_invisible(x, y)
+    @visible[x - @area.x][y - @area.y] = false
   end
 
   def sort_by_distance(positions)
