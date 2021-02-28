@@ -71,5 +71,19 @@ def test_vertical_line_intersect_horizontal_line(_args, assert)
   assert.equal! line1.intersection_with(line2), -1.5
 end
 
+def test_line_intersect_horizontal_line(_args, assert)
+  line1 = LineOfSight::Line.new([1, 1], [2, 3])
+  line2 = LineOfSight::HorizontalLine.new(0, 2, y: 5)
+
+  assert.equal! line1.intersection_with(line2), 1.5
+end
+
+def test_line_intersect_vertical_line(_args, assert)
+  line1 = LineOfSight::Line.new([1, 1], [2, 3])
+  line2 = LineOfSight::VerticalLine.new(0, 2, x: 5)
+
+  assert.equal! line1.intersection_with(line2), 4.5
+end
+
 $gtk.reset 100
 $gtk.log_level = :off

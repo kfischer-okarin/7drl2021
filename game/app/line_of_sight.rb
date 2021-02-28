@@ -50,6 +50,44 @@ class LineOfSight
     end
   end
 
+  class Line
+    def self.from_points(point1, point2)
+      return VerticalLine.new(point1.y, point2.y, x: point1.x) if point1.x == point2.x
+      return HorizontalLine.new(point1.x, point2.x, y: point1.y) if point1.y == point2.y
+
+      new(point1, point2)
+    end
+
+    def initialize(point1, point2)
+      @x, @y = point1
+      @dx = point2.x - point1.x
+      @dy = point2.y - point1.y
+    end
+
+    def intersection_with(other)
+      return intersection_with_horizontal_line(other) if other.is_a? HorizontalLine
+      return intersection_with_vertical_line(other) if other.is_a? VerticalLine
+
+      raise 'General line-line intersection not implemented yet'
+    end
+
+    private
+
+    def intersection_with_horizontal_line(other)
+      # x + a * dx = ox1 + result * (ox2 - ox1)
+      # y + a * dy = oy
+      # => a = (oy - y) / dy
+      # => x + (oy - y) * dx / dy = ox1 + result * (ox2 - ox1)
+      # => ((x - ox1) + (oy - y) * dx / dy) / (ox2 - ox1)
+      ((@x - other.x1) + (other.y - @y) * (@dx / @dy)) / (other.x2 - other.x1)
+    end
+
+    def intersection_with_vertical_line(other)
+      # Reverse from above
+      ((@y - other.y1) + (other.x - @x) * (@dy / @dx)) / (other.y2 - other.y1)
+    end
+  end
+
   private
 
   def visible?(position)
