@@ -8,6 +8,7 @@ require 'lib/tilemap_view/require.rb'
 require 'app/resources.rb'
 require 'app/world.rb'
 require 'app/world_view.rb'
+require 'app/line_of_sight.rb'
 
 class Renderer
   def render_string(args, string, attributes)
