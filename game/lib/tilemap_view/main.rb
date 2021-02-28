@@ -92,6 +92,10 @@ class TilemapView
     self.origin = [rect.x, rect.y]
   end
 
+  def rect
+    [@origin.x, @origin.y, @size.x, @size.y]
+  end
+
   def path
     @name
   end
