@@ -1,4 +1,4 @@
-class LineOfSight
+class FieldOfView
   attr_reader :visible_positions
 
   def initialize(map, from:, area:)

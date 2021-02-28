@@ -1,6 +1,6 @@
 require 'tests/test_helper.rb'
 
-module LineOfSightTest
+module FieldOfViewTest
   class Map
     def initialize
       @blocking_sight = Set.new
@@ -17,8 +17,8 @@ module LineOfSightTest
 end
 
 def test_line_of_sight_without_obstacle(_args, assert)
-  map = LineOfSightTest::Map.new
-  line_of_sight = LineOfSight.new(map, from: [0, 0], area: [0, 0, 3, 3])
+  map = FieldOfViewTest::Map.new
+  line_of_sight = FieldOfView.new(map, from: [0, 0], area: [0, 0, 3, 3])
 
   assert.equal! line_of_sight.visible_positions, Set.new(
     [0, 2], [1, 2], [2, 2],
@@ -28,9 +28,9 @@ def test_line_of_sight_without_obstacle(_args, assert)
 end
 
 def test_line_of_sight_at_corner(_args, assert)
-  map = LineOfSightTest::Map.new
+  map = FieldOfViewTest::Map.new
   map.block_sight([1, 0])
-  line_of_sight = LineOfSight.new(map, from: [0, 0], area: [0, 0, 3, 3])
+  line_of_sight = FieldOfView.new(map, from: [0, 0], area: [0, 0, 3, 3])
 
   assert.equal! line_of_sight.visible_positions, Set.new(
     [0, 2], [1, 2], [2, 2],
@@ -42,57 +42,57 @@ end
 # Line intersection tests
 
 def test_horizontal_line_parallel_to_horizontal_line(_args, assert)
-  line1 = LineOfSight::HorizontalLine.new(0, 1, y: 0)
-  line2 = LineOfSight::HorizontalLine.new(0, 1, y: 1)
+  line1 = FieldOfView::HorizontalLine.new(0, 1, y: 0)
+  line2 = FieldOfView::HorizontalLine.new(0, 1, y: 1)
 
   assert.nil! line1.intersection_with(line2)
 end
 
 def test_horizontal_line_identical_to_horizontal_line(_args, assert)
-  line1 = LineOfSight::HorizontalLine.new(0, 1, y: 0)
-  line2 = LineOfSight::HorizontalLine.new(0, 1, y: 0)
+  line1 = FieldOfView::HorizontalLine.new(0, 1, y: 0)
+  line2 = FieldOfView::HorizontalLine.new(0, 1, y: 0)
 
   assert.equal! line1.intersection_with(line2), :identical
 end
 
 def test_vertical_line_parallel_to_vertical_line(_args, assert)
-  line1 = LineOfSight::VerticalLine.new(0, 1, x: 0)
-  line2 = LineOfSight::VerticalLine.new(0, 1, x: 1)
+  line1 = FieldOfView::VerticalLine.new(0, 1, x: 0)
+  line2 = FieldOfView::VerticalLine.new(0, 1, x: 1)
 
   assert.nil! line1.intersection_with(line2)
 end
 
 def test_vertical_line_identical_to_vertical_line(_args, assert)
-  line1 = LineOfSight::VerticalLine.new(0, 1, x: 0)
-  line2 = LineOfSight::VerticalLine.new(0, 1, x: 0)
+  line1 = FieldOfView::VerticalLine.new(0, 1, x: 0)
+  line2 = FieldOfView::VerticalLine.new(0, 1, x: 0)
 
   assert.equal! line1.intersection_with(line2), :identical
 end
 
 def test_horizontal_line_intersect_vertical_line(_args, assert)
-  line1 = LineOfSight::HorizontalLine.new(0, 1, y: 10)
-  line2 = LineOfSight::VerticalLine.new(0, 2, x: 5)
+  line1 = FieldOfView::HorizontalLine.new(0, 1, y: 10)
+  line2 = FieldOfView::VerticalLine.new(0, 2, x: 5)
 
   assert.equal! line1.intersection_with(line2), 5
 end
 
 def test_vertical_line_intersect_horizontal_line(_args, assert)
-  line1 = LineOfSight::VerticalLine.new(0, 1, x: -3)
-  line2 = LineOfSight::HorizontalLine.new(0, 2, y: 5)
+  line1 = FieldOfView::VerticalLine.new(0, 1, x: -3)
+  line2 = FieldOfView::HorizontalLine.new(0, 2, y: 5)
 
   assert.equal! line1.intersection_with(line2), -1.5
 end
 
 def test_line_intersect_horizontal_line(_args, assert)
-  line1 = LineOfSight::Line.new([1, 1], [2, 3])
-  line2 = LineOfSight::HorizontalLine.new(0, 2, y: 5)
+  line1 = FieldOfView::Line.new([1, 1], [2, 3])
+  line2 = FieldOfView::HorizontalLine.new(0, 2, y: 5)
 
   assert.equal! line1.intersection_with(line2), 1.5
 end
 
 def test_line_intersect_vertical_line(_args, assert)
-  line1 = LineOfSight::Line.new([1, 1], [2, 3])
-  line2 = LineOfSight::VerticalLine.new(0, 2, x: 5)
+  line1 = FieldOfView::Line.new([1, 1], [2, 3])
+  line2 = FieldOfView::VerticalLine.new(0, 2, x: 5)
 
   assert.equal! line1.intersection_with(line2), 4.5
 end
