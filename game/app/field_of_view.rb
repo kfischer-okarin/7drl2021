@@ -1,17 +1,26 @@
 class FieldOfView
-  def initialize(map, from:, area:)
+  include RectExtensions
+
+  attr_reader :x, :y, :w, :h
+
+  def initialize(map)
     @map = map
+    @x = 0
+    @y = 0
+    @w = map.size.x
+    @h = map.size.y
+    @visible = Array.build_2d(@w, @h, true)
+  end
+
+  def calculate(from:)
     @from = from
-    @area = area
-    @obstacles = sort_by_distance(map.blocking_positions_in(@area))
-    @visible = (0...@area.w).map {
-      (0...@area.h).map { true }
-    }
+    @obstacles = sort_by_distance(@map.obstacles)
+    @visible.fill_2d(true)
     calc_visible_positions
   end
 
   def visible?(x, y)
-    (@visible[x - @area.x] || [])[y - @area.y]
+    (@visible[x] || [])[y]
   end
 
   private
@@ -21,19 +30,19 @@ class FieldOfView
       next unless visible?(obstacle.x, obstacle.y)
 
       if obstacle.x > @from.x
-        ((obstacle.x + 1)...@area.right).each do |x|
+        ((obstacle.x + 1)...@w).each do |x|
           set_invisible(x, @from.y)
         end
       elsif obstacle.x < @from.x
-        (@area.left...obstacle.x).each do |x|
+        (0...obstacle.x).each do |x|
           set_invisible(x, @from.y)
         end
       elsif obstacle.y > @from.y
-        ((obstacle.y + 1)...@area.top).each do |y|
+        ((obstacle.y + 1)...@h).each do |y|
           set_invisible(@from.x, y)
         end
       elsif obstacle.y < @from.y
-        (@area.bottom...obstacle.y).each do |y|
+        (0...obstacle.y).each do |y|
           set_invisible(@from.x, y)
         end
       end
@@ -41,7 +50,7 @@ class FieldOfView
   end
 
   def set_invisible(x, y)
-    @visible[x - @area.x][y - @area.y] = false
+    @visible[x][y] = false
   end
 
   def sort_by_distance(positions)

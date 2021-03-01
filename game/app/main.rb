@@ -1,6 +1,7 @@
 require 'lib/debug_mode.rb'
 require 'lib/extra_keys.rb'
 require 'lib/resources.rb'
+require 'lib/rect_extensions.rb'
 require 'lib/array_extensions.rb'
 require 'lib/set.rb'
 require 'lib/tilemap_view/require.rb'

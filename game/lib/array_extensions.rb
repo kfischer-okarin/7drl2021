@@ -7,20 +7,15 @@ class Array
     all?(&:zero?)
   end
 
-  def each_position(&block)
-    enumerator = Enumerator.new do |yielder|
-      x = self[0]
-      y = self[1]
-      while y < self[3]
-        while x < self[2]
-          yielder << [x, y]
-          x += 1
-        end
-        x = self[0]
-        y += 1
-      end
-    end
+  def self.build_2d(size1, size2, default_value = nil)
+    (0...size1).map {
+      Array.new(size2, default_value)
+    }
+  end
 
-    block ? enumerator.each(&block) : enumerator
+  def fill_2d(value)
+    each do |sub_array|
+      sub_array.fill(value)
+    end
   end
 end

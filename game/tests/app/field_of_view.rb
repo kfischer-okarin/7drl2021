@@ -2,7 +2,10 @@ require 'tests/test_helper.rb'
 
 module FieldOfViewTest
   class Map
-    def initialize
+    attr_reader :size
+
+    def initialize(size)
+      @size = size
       @blocking_sight = Set.new
     end
 
@@ -10,17 +13,26 @@ module FieldOfViewTest
       @blocking_sight << position
     end
 
-    def blocking_positions_in(rect)
-      @blocking_sight.select { |position| position.inside_rect? rect }
+    def obstacles
+      @blocking_sight.to_a
     end
+  end
+
+  def self.visible_positions(field_of_view)
+    Set.new.tap { |result|
+      field_of_view.each_position do |position|
+        result << position if field_of_view.visible?(position.x, position.y)
+      end
+    }
   end
 end
 
 def test_fov_without_obstacle(_args, assert)
-  map = FieldOfViewTest::Map.new
-  line_of_sight = FieldOfView.new(map, from: [0, 0], area: [0, 0, 3, 3])
+  map = FieldOfViewTest::Map.new([3, 3])
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 0])
 
-  assert.equal! line_of_sight.visible_positions, Set.new(
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
     [0, 2], [1, 2], [2, 2],
     [0, 1], [1, 1], [2, 1],
     [0, 0], [1, 0], [2, 0]
@@ -28,36 +40,37 @@ def test_fov_without_obstacle(_args, assert)
 end
 
 def test_fov_behind_pillar(_args, assert)
-  map = FieldOfViewTest::Map.new
+  map = FieldOfViewTest::Map.new([3, 3])
   map.block_sight([1, 1])
 
-  line_of_sight = FieldOfView.new(map, from: [0, 1], area: [0, 0, 3, 3])
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 1])
 
-  assert.equal! line_of_sight.visible_positions, Set.new(
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
     [0, 2], [1, 2], [2, 2],
     [0, 1], [1, 1],
     [0, 0], [1, 0], [2, 0]
   )
 
-  line_of_sight = FieldOfView.new(map, from: [1, 0], area: [0, 0, 3, 3])
+  field_of_view.calculate(from: [1, 0])
 
-  assert.equal! line_of_sight.visible_positions, Set.new(
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
     [0, 2],         [2, 2],
     [0, 1], [1, 1], [2, 1],
     [0, 0], [1, 0], [2, 0]
   )
 
-  line_of_sight = FieldOfView.new(map, from: [2, 1], area: [0, 0, 3, 3])
+  field_of_view.calculate(from: [2, 1])
 
-  assert.equal! line_of_sight.visible_positions, Set.new(
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
     [0, 2], [1, 2], [2, 2],
             [1, 1], [2, 1],
     [0, 0], [1, 0], [2, 0]
   )
 
-  line_of_sight = FieldOfView.new(map, from: [1, 2], area: [0, 0, 3, 3])
+  field_of_view.calculate(from: [1, 2])
 
-  assert.equal! line_of_sight.visible_positions, Set.new(
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
     [0, 2], [1, 2], [2, 2],
     [0, 1], [1, 1], [2, 1],
     [0, 0],         [2, 0]
