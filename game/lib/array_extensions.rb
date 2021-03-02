@@ -18,4 +18,8 @@ class Array
       sub_array.fill(value)
     end
   end
+
+  def inside_grid_rect?(rect)
+    x >= rect.x && x < rect.right && y >= rect.y && y < rect.top
+  end
 end
