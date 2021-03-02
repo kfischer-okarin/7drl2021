@@ -1,4 +1,5 @@
 class FieldOfView
+  include AttrRect
   include RectExtensions
 
   attr_reader :x, :y, :w, :h
@@ -29,21 +30,35 @@ class FieldOfView
     @obstacles.each do |obstacle|
       next unless visible?(obstacle.x, obstacle.y)
 
-      if obstacle.x > @from.x
-        ((obstacle.x + 1)...@w).each do |x|
-          set_invisible(x, @from.y)
+      dx = obstacle.x - @from.x
+      dy = obstacle.y - @from.y
+
+      if dy.zero?
+        if dx.positive?
+          ((obstacle.x + 1)...@w).each do |x|
+            set_invisible(x, @from.y)
+          end
+        elsif dx.negative?
+          (0...obstacle.x).each do |x|
+            set_invisible(x, @from.y)
+          end
         end
-      elsif obstacle.x < @from.x
-        (0...obstacle.x).each do |x|
-          set_invisible(x, @from.y)
+      elsif dx.zero?
+        if dy.positive?
+          ((obstacle.y + 1)...@h).each do |y|
+            set_invisible(@from.x, y)
+          end
+        elsif dy.negative?
+          (0...obstacle.y).each do |y|
+            set_invisible(@from.x, y)
+          end
         end
-      elsif obstacle.y > @from.y
-        ((obstacle.y + 1)...@h).each do |y|
-          set_invisible(@from.x, y)
-        end
-      elsif obstacle.y < @from.y
-        (0...obstacle.y).each do |y|
-          set_invisible(@from.x, y)
+      elsif dx.abs == 1 && dy.abs == 1
+        pos = [obstacle.x + dx, obstacle.y + dy]
+        while pos.inside_grid_rect? self
+          set_invisible(pos.x, pos.y)
+          pos.x += dx
+          pos.y += dy
         end
       end
     end

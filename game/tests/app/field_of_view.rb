@@ -25,6 +25,13 @@ module FieldOfViewTest
       end
     }
   end
+
+  def self.map3x3_pillar_center
+    map = Map.new([3, 3])
+    map.block_sight([1, 1])
+
+    FieldOfView.new(map)
+  end
 end
 
 def test_fov_without_obstacle(_args, assert)
@@ -39,11 +46,8 @@ def test_fov_without_obstacle(_args, assert)
   )
 end
 
-def test_fov_behind_pillar(_args, assert)
-  map = FieldOfViewTest::Map.new([3, 3])
-  map.block_sight([1, 1])
-
-  field_of_view = FieldOfView.new(map)
+def test_fov_directly_left_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
   field_of_view.calculate(from: [0, 1])
 
   assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
@@ -51,7 +55,10 @@ def test_fov_behind_pillar(_args, assert)
     [0, 1], [1, 1],
     [0, 0], [1, 0], [2, 0]
   )
+end
 
+def test_fov_directly_down_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
   field_of_view.calculate(from: [1, 0])
 
   assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
@@ -59,7 +66,10 @@ def test_fov_behind_pillar(_args, assert)
     [0, 1], [1, 1], [2, 1],
     [0, 0], [1, 0], [2, 0]
   )
+end
 
+def test_fov_directly_right_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
   field_of_view.calculate(from: [2, 1])
 
   assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
@@ -67,13 +77,60 @@ def test_fov_behind_pillar(_args, assert)
             [1, 1], [2, 1],
     [0, 0], [1, 0], [2, 0]
   )
+end
 
+def test_fov_directly_up_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
   field_of_view.calculate(from: [1, 2])
 
   assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
     [0, 2], [1, 2], [2, 2],
     [0, 1], [1, 1], [2, 1],
     [0, 0],         [2, 0]
+  )
+end
+
+def test_fov_directly_down_left_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
+  field_of_view.calculate(from: [0, 0])
+
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
+    [0, 2], [1, 2],
+    [0, 1], [1, 1], [2, 1],
+    [0, 0], [1, 0], [2, 0]
+  )
+end
+
+def test_fov_directly_down_right_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
+  field_of_view.calculate(from: [2, 0])
+
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
+            [1, 2], [2, 2],
+    [0, 1], [1, 1], [2, 1],
+    [0, 0], [1, 0], [2, 0]
+  )
+end
+
+def test_fov_directly_up_left_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
+  field_of_view.calculate(from: [0, 2])
+
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
+    [0, 2], [1, 2], [2, 2],
+    [0, 1], [1, 1], [2, 1],
+    [0, 0], [1, 0]
+  )
+end
+
+def test_fov_directly_up_right_of_pillar(_args, assert)
+  field_of_view = FieldOfViewTest.map3x3_pillar_center
+  field_of_view.calculate(from: [2, 2])
+
+  assert.equal! FieldOfViewTest.visible_positions(field_of_view), Set.new(
+    [0, 2], [1, 2], [2, 2],
+    [0, 1], [1, 1], [2, 1],
+            [1, 0], [2, 0]
   )
 end
 
