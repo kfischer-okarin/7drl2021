@@ -1,6 +1,5 @@
 class FieldOfView
   include AttrRect
-  include RectExtensions
 
   attr_reader :x, :y, :w, :h, :from
 

@@ -22,7 +22,7 @@ module FieldOfViewTest
         y = field_of_view.h - y_from_top - 1
         (0...field_of_view.w).map { |x|
           if field_of_view.visible?(x, y)
-            if @blocking_sight.any? { |obstacle| obstacle == [x, y] || [x, y].inside_grid_rect?(obstacle) }
+            if @blocking_sight.any? { |obstacle| [x, y].inside_grid_rect?(obstacle) }
               'o'
             elsif field_of_view.from == [x, y]
               '@'
