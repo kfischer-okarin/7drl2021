@@ -10,7 +10,7 @@ module FieldOfViewTest
     end
 
     def block_sight(position)
-      @blocking_sight << position
+      @blocking_sight << (position.length == 2 ? [position.x, position.y, 1, 1] : position)
     end
 
     def obstacles
@@ -22,7 +22,7 @@ module FieldOfViewTest
         y = field_of_view.h - y_from_top - 1
         (0...field_of_view.w).map { |x|
           if field_of_view.visible?(x, y)
-            if @blocking_sight.include?([x, y])
+            if @blocking_sight.any? { |obstacle| obstacle == [x, y] || [x, y].inside_grid_rect?(obstacle) }
               'o'
             elsif field_of_view.from == [x, y]
               '@'
@@ -39,7 +39,7 @@ module FieldOfViewTest
 
   def self.map3x3_pillar_center
     map = Map.new([3, 3])
-    map.block_sight([1, 1])
+    map.block_sight [1, 1]
 
     [map, FieldOfView.new(map)]
   end
@@ -147,7 +147,7 @@ end
 
 def test_fov_two_or_more_steps_away_from_pillar(_args, assert)
   map = FieldOfViewTest::Map.new([10, 10])
-  map.block_sight([2, 2])
+  map.block_sight [2, 2]
   field_of_view = FieldOfView.new(map)
   field_of_view.calculate(from: [1, 0])
 
@@ -162,6 +162,21 @@ def test_fov_two_or_more_steps_away_from_pillar(_args, assert)
     '  o       ',
     '          ',
     ' @        '
+  ].join("\n")
+end
+
+def test_fov_with_longer_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([5, 5])
+  map.block_sight [1, 1, 2, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [1, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    ' xxxx',
+    ' xxxx',
+    ' xxx ',
+    ' oo  ',
+    ' @   '
   ].join("\n")
 end
 
