@@ -165,7 +165,7 @@ def test_fov_two_or_more_steps_away_from_pillar(_args, assert)
   ].join("\n")
 end
 
-def test_fov_with_longer_wall(_args, assert)
+def test_fov_directly_down_of_longer_wall(_args, assert)
   map = FieldOfViewTest::Map.new([5, 5])
   map.block_sight [1, 1, 2, 1]
   field_of_view = FieldOfView.new(map)
@@ -177,6 +177,51 @@ def test_fov_with_longer_wall(_args, assert)
     ' xxx ',
     ' oo  ',
     ' @   '
+  ].join("\n")
+end
+
+def test_fov_directly_up_of_longer_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([5, 5])
+  map.block_sight [1, 3, 2, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [1, 4])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    ' @   ',
+    ' oo  ',
+    ' xxx ',
+    ' xxxx',
+    ' xxxx'
+  ].join("\n")
+end
+
+def test_fov_directly_left_of_longer_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([5, 5])
+  map.block_sight [1, 1, 1, 2]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 1])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '   xx',
+    '  xxx',
+    ' oxxx',
+    '@oxxx',
+    '     '
+  ].join("\n")
+end
+
+def test_fov_directly_right_of_longer_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([5, 5])
+  map.block_sight [3, 1, 1, 2]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [4, 1])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    'xx   ',
+    'xxx  ',
+    'xxxo ',
+    'xxxo@',
+    '     '
   ].join("\n")
 end
 

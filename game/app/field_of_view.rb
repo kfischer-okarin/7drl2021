@@ -31,21 +31,42 @@ class FieldOfView
 
       next calc_pillar_shadow(obstacle) if obstacle.w == 1 && obstacle.h == 1
 
-      obstacle_left = obstacle.x
-      obstacle_right = obstacle.x + obstacle.w - 1
+      if obstacle.w > 1 && obstacle.h == 1 && obstacle.y != @from.y
+        obstacle_left = obstacle.grid_left
+        obstacle_right = obstacle.grid_right
 
-      dx_left = obstacle_left - @from.x
-      dx_right = obstacle_right - @from.x
-      x_left = obstacle_left
-      x_right = obstacle_right
-      y = obstacle.y + 1
-      while y < @w
-        x_left = [x_left + dx_left, 0].max
-        x_right = [x_right + dx_right, @w - 1].min
-        (x_left..x_right).each do |x|
-          set_invisible(x, y)
+        dy = obstacle.y - @from.y
+        dx_left = obstacle_left - @from.x
+        dx_right = obstacle_right - @from.x
+        x_left = obstacle_left
+        x_right = obstacle_right
+        y = obstacle.y + dy
+        while y >= 0 && y < @h
+          x_left = [x_left + dx_left, 0].max
+          x_right = [x_right + dx_right, @w - 1].min
+          (x_left..x_right).each do |x|
+            set_invisible(x, y)
+          end
+          y += dy
         end
-        y += 1
+      elsif obstacle.h > 1 && obstacle.w == 1 && obstacle.x != @from.x
+        obstacle_bottom = obstacle.grid_bottom
+        obstacle_top = obstacle.grid_top
+
+        dx = obstacle.x - @from.x
+        dy_bottom = obstacle_bottom - @from.y
+        dx_top = obstacle_top - @from.y
+        y_bottom = obstacle_bottom
+        y_top = obstacle_top
+        x = obstacle.x + dx
+        while x >= 0 && x < @w
+          y_bottom = [y_bottom + dy_bottom, 0].max
+          y_top = [y_top + dx_top, @h - 1].min
+          (y_bottom..y_top).each do |y|
+            set_invisible(x, y)
+          end
+          x += dx
+        end
       end
     end
   end
