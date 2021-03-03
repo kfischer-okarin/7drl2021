@@ -53,7 +53,7 @@ class FieldOfView
             set_invisible(@from.x, y)
           end
         end
-      elsif dx.abs == 1 && dy.abs == 1
+      else
         pos = [obstacle.x + dx, obstacle.y + dy]
         while pos.inside_grid_rect? self
           set_invisible(pos.x, pos.y)

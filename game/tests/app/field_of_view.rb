@@ -145,5 +145,25 @@ def test_fov_directly_up_right_of_pillar(_args, assert)
   ].join("\n")
 end
 
+def test_fov_two_or_more_steps_away_from_pillar(_args, assert)
+  map = FieldOfViewTest::Map.new([10, 10])
+  map.block_sight([2, 2])
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [1, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '          ',
+    '     x    ',
+    '          ',
+    '    x     ',
+    '          ',
+    '   x      ',
+    '          ',
+    '  o       ',
+    '          ',
+    ' @        '
+  ].join("\n")
+end
+
 $gtk.reset 100
 $gtk.log_level = :off
