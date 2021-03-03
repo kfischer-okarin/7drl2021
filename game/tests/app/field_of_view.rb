@@ -165,7 +165,7 @@ def test_fov_two_or_more_steps_away_from_pillar(_args, assert)
   ].join("\n")
 end
 
-def test_fov_directly_down_of_longer_wall(_args, assert)
+def test_fov_directly_down_of_wall(_args, assert)
   map = FieldOfViewTest::Map.new([5, 5])
   map.block_sight [1, 1, 2, 1]
   field_of_view = FieldOfView.new(map)
@@ -180,7 +180,7 @@ def test_fov_directly_down_of_longer_wall(_args, assert)
   ].join("\n")
 end
 
-def test_fov_directly_up_of_longer_wall(_args, assert)
+def test_fov_directly_up_of_wall(_args, assert)
   map = FieldOfViewTest::Map.new([5, 5])
   map.block_sight [1, 3, 2, 1]
   field_of_view = FieldOfView.new(map)
@@ -195,7 +195,7 @@ def test_fov_directly_up_of_longer_wall(_args, assert)
   ].join("\n")
 end
 
-def test_fov_directly_left_of_longer_wall(_args, assert)
+def test_fov_directly_left_of_wall(_args, assert)
   map = FieldOfViewTest::Map.new([5, 5])
   map.block_sight [1, 1, 1, 2]
   field_of_view = FieldOfView.new(map)
@@ -210,7 +210,7 @@ def test_fov_directly_left_of_longer_wall(_args, assert)
   ].join("\n")
 end
 
-def test_fov_directly_right_of_longer_wall(_args, assert)
+def test_fov_directly_right_of_wall(_args, assert)
   map = FieldOfViewTest::Map.new([5, 5])
   map.block_sight [3, 1, 1, 2]
   field_of_view = FieldOfView.new(map)
@@ -222,6 +222,46 @@ def test_fov_directly_right_of_longer_wall(_args, assert)
     'xxxo ',
     'xxxo@',
     '     '
+  ].join("\n")
+end
+
+def test_fov_two_or_more_steps_away_from_wall_vertical(_args, assert)
+  map = FieldOfViewTest::Map.new([10, 10])
+  map.block_sight [3, 3, 4, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [4, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    ' xxxxxxxxx',
+    '  xxxxxxxx',
+    '  xxxxxxx ',
+    '  xxxxxxx ',
+    '   xxxxx  ',
+    '   xxxx   ',
+    '   oooo   ',
+    '          ',
+    '          ',
+    '    @     '
+  ].join("\n")
+end
+
+def test_fov_two_or_more_steps_away_from_wall_horizontal(_args, assert)
+  map = FieldOfViewTest::Map.new([10, 10])
+  map.block_sight [2, 2, 1, 3]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 3])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '          ',
+    '          ',
+    '        xx',
+    '      xxxx',
+    '    xxxxxx',
+    '  oxxxxxxx',
+    '@ oxxxxxxx',
+    '  oxxxxxxx',
+    '    xxxxxx',
+    '      xxxx'
   ].join("\n")
 end
 
