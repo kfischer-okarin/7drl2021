@@ -2,7 +2,7 @@ class FieldOfView
   include AttrRect
   include RectExtensions
 
-  attr_reader :x, :y, :w, :h
+  attr_reader :x, :y, :w, :h, :from
 
   def initialize(map)
     @map = map
