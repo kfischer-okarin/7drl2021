@@ -35,6 +35,7 @@ class FieldOfView
     @w = map.size.x
     @h = map.size.y
     @visible = Array.build_2d(@w, @h, true)
+    @debug_output = DebugOutput.new
   end
 
   def calculate(from:)
@@ -50,9 +51,38 @@ class FieldOfView
 
   private
 
+  class DebugOutput
+    def clear
+      $args.debug.static_primitives.reject! { |primitive| primitive[:wall] }
+      @process_order = 1
+    end
+
+    def render(obstacle)
+      color = obstacle.w > obstacle.h ? { r: 255 } : { g: 255 }
+      $args.debug.static_primitives << {
+        x: obstacle.x * 24,
+        y: obstacle.y * 24 + 72,
+        w: obstacle.w * 24,
+        h: obstacle.h * 24,
+        wall: true
+      }.merge(color).border
+      $args.debug.static_primitives << {
+        x: obstacle.x * 24,
+        y: obstacle.y * 24 + 72 + 24,
+        text: @process_order.to_s,
+        wall: true
+      }.merge(color).label
+      @process_order += 1
+    end
+  end
+
   def calc_visible_positions
+    @debug_output.clear if $args.debug.active?
+
     @obstacles.each do |obstacle|
       next unless visible?(obstacle.x, obstacle.y) # TODO: Fix
+
+      @debug_output.render(obstacle) if $args.debug.active?
 
       next calc_pillar_shadow(obstacle) if obstacle.w == 1 && obstacle.h == 1
 

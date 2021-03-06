@@ -4,8 +4,13 @@ module DebugExtension
       @args = args
       @active = false
       @debug_logs = []
+      @static_primitives = []
       @last_debug_y = 720
       @reset_handlers = []
+    end
+
+    def static_primitives
+      @static_primitives
     end
 
     def active?
@@ -26,6 +31,7 @@ module DebugExtension
       handle_debug_function
 
       render_debug_logs
+      render_debug_primitives
     end
 
     def on_reset(&block)
@@ -70,6 +76,10 @@ module DebugExtension
       @args.outputs.debug << @debug_logs
       @debug_logs.clear
       @last_debug_y = 720
+    end
+
+    def render_debug_primitives
+      @args.outputs.debug << @static_primitives
     end
   end
 
