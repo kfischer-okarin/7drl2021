@@ -3,6 +3,13 @@ class FieldOfView
 
   attr_reader :x, :y, :w, :h, :from
 
+  def self.sort_by_distance_to(rects, position:)
+    # TODO: Improve for rects
+    rects.sort_by { |rect|
+      [(position.x - rect.x).abs, (position.y - rect.y).abs].min
+    }
+  end
+
   def initialize(map)
     @map = map
     @x = 0
@@ -14,7 +21,7 @@ class FieldOfView
 
   def calculate(from:)
     @from = from
-    @obstacles = sort_by_distance(@map.obstacles)
+    @obstacles = FieldOfView.sort_by_distance_to(@map.obstacles, position: @from)
     @visible.fill_2d(true)
     calc_visible_positions
   end
@@ -27,7 +34,7 @@ class FieldOfView
 
   def calc_visible_positions
     @obstacles.each do |obstacle|
-      next unless visible?(obstacle.x, obstacle.y)
+      next unless visible?(obstacle.x, obstacle.y) # TODO: Fix
 
       next calc_pillar_shadow(obstacle) if obstacle.w == 1 && obstacle.h == 1
 
@@ -139,12 +146,5 @@ class FieldOfView
         pos.y += dy
       end
     end
-  end
-
-  def sort_by_distance(positions)
-    # TODO: Improve for rects
-    positions.sort_by { |position|
-      [(@from.x - position.x).abs, (@from.y - position.y).abs].min
-    }
   end
 end
