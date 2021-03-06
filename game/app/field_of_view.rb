@@ -3,10 +3,28 @@ class FieldOfView
 
   attr_reader :x, :y, :w, :h, :from
 
+  def self.closest_point_on_wall_to(wall, position:)
+    x = if position.x < wall.grid_left
+          wall.grid_left
+        elsif position.x >= wall.grid_right
+          wall.grid_right
+        else
+          position.x
+        end
+    y = if position.y < wall.grid_bottom
+          wall.grid_bottom
+        elsif position.y >= wall.grid_top
+          wall.grid_top
+        else
+          position.y
+        end
+    [x, y]
+  end
+
   def self.sort_by_distance_to(rects, position:)
-    # TODO: Improve for rects
     rects.sort_by { |rect|
-      [(position.x - rect.x).abs, (position.y - rect.y).abs].min
+      closest_point = closest_point_on_wall_to(rect, position: position)
+      [(position.x - closest_point.x).abs, (position.y - closest_point.y).abs].max #.tap { |v| p [rect, closest_point, v] }
     }
   end
 

@@ -265,5 +265,34 @@ def test_fov_two_or_more_steps_away_from_wall_horizontal(_args, assert)
   ].join("\n")
 end
 
+def test_closest_point_on_wall_to(_args, assert)
+  [
+    { wall: [-4, 2, 2, 1], result: [-3, 2] },
+    { wall: [4, 2, 2, 1], result: [4, 2] },
+    { wall: [-4, 2, 8, 1], result: [0, 2] },
+    { wall: [-2, -3, 1, 2], result: [-2, -2] },
+    { wall: [-2, 3, 1, 2], result: [-2, 3] },
+    { wall: [-2, -3, 1, 6], result: [-2, 0] }
+  ].each do |test_data|
+    assert.equal! FieldOfView.closest_point_on_wall_to(test_data[:wall], position: [0, 0]), test_data[:result]
+  end
+end
+
+def test_sort_by_distance_to(_args, assert)
+  #   aaa
+  # bbbbbbb
+  #    @
+  obstacles = [
+    [-1, 2, 3, 1], # a
+    [-3, 1, 7, 1]  # b
+  ]
+  sorted = FieldOfView.sort_by_distance_to(obstacles, position: [0, 0])
+
+  assert.equal! sorted, [
+    [-3, 1, 7, 1], # b
+    [-1, 2, 3, 1] # a
+  ]
+end
+
 $gtk.reset 100
 $gtk.log_level = :off
