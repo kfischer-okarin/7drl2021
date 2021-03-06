@@ -80,7 +80,7 @@ class FieldOfView
     @debug_output.clear if $args.debug.active?
 
     @obstacles.each do |obstacle|
-      next unless visible?(obstacle.x, obstacle.y) # TODO: Fix
+      next unless obstacle.each_position.any? { |x, y| visible?(x, y) }
 
       @debug_output.render(obstacle) if $args.debug.active?
 
