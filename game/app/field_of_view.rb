@@ -98,11 +98,15 @@ class FieldOfView
         right_step = dx_right.sign
 
         x_left = obstacle_left
+        x_left += left_step if dx_left.positive? # Adjustment for left diagonal position
         x_right = obstacle_right
+        x_right += right_step if dx_right.negative? # Adjustment for right diagonal position
 
         steps_needed = dy.abs
         x_left_progress = 0
+        x_left_progress -= dx_left.abs if dx_left.positive? # Adjustment for left diagonal position
         x_right_progress = 0
+        x_right_progress -= dx_right.abs if dx_right.negative? # Adjustment for right diagonal position
         y = obstacle.y + y_step
         while y >= 0 && y < @h
           x_left_progress += dx_left.abs
@@ -132,11 +136,15 @@ class FieldOfView
         top_step = dy_top.sign
 
         y_bottom = obstacle_bottom
+        y_bottom += bottom_step if dy_bottom.positive? # Adjustment for bottom diagonal position
         y_top = obstacle_top
+        y_top += top_step if dy_top.negative? # Adjustment for top diagonal position
 
         steps_needed = dx.abs
         y_bottom_progress = 0
+        y_bottom_progress -= dy_bottom.abs if dy_bottom.positive? # Adjustment for bottom diagonal position
         y_top_progress = 0
+        y_top_progress -= dy_top.abs if dy_top.negative? # Adjustment for top diagonal position
         x = obstacle.x + x_step
         while x >= 0 && x < @w
           y_bottom_progress += dy_bottom.abs

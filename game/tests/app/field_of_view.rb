@@ -265,6 +265,78 @@ def test_fov_two_or_more_steps_away_from_wall_horizontal(_args, assert)
   ].join("\n")
 end
 
+def test_fov_diagonal_left_of_horizontal_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([15, 7])
+  map.block_sight [1, 2, 4, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '   xxxxxxxxxx  ',
+    '   xxxxxxxx    ',
+    '  xxxxxxx      ',
+    '  xxxxx        ',
+    ' oooo          ',
+    '               ',
+    '@              '
+  ].join("\n")
+end
+
+def test_fov_diagonal_right_of_horizontal_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([15, 7])
+  map.block_sight [10, 2, 4, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [14, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '  xxxxxxxxxx   ',
+    '    xxxxxxxx   ',
+    '      xxxxxxx  ',
+    '        xxxxx  ',
+    '          oooo ',
+    '               ',
+    '              @'
+  ].join("\n")
+end
+
+def test_fov_diagonal_bottom_of_vertical_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([15, 9])
+  map.block_sight [2, 1, 1, 4]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '    xxxxxxxxxxx',
+    '    xxxxxxxxxxx',
+    '   xxxxxxxxxx  ',
+    '   xxxxxxxx    ',
+    '  oxxxxxx      ',
+    '  oxxxx        ',
+    '  oxx          ',
+    '  o            ',
+    '@              '
+  ].join("\n")
+end
+
+def test_fov_diagonal_top_of_vertical_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([15, 9])
+  map.block_sight [2, 4, 1, 4]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 8])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '@              ',
+    '  o            ',
+    '  oxx          ',
+    '  oxxxx        ',
+    '  oxxxxxx      ',
+    '   xxxxxxxx    ',
+    '   xxxxxxxxxx  ',
+    '    xxxxxxxxxxx',
+    '    xxxxxxxxxxx'
+  ].join("\n")
+end
+
 def test_closest_point_on_wall_to(_args, assert)
   [
     { wall: [-4, 2, 2, 1], result: [-3, 2] },
