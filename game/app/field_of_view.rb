@@ -76,6 +76,43 @@ class FieldOfView
     end
   end
 
+  class Line
+    attr_reader :x, :y
+
+    def initialize(start, dx:, dy:)
+      @x = start.x
+      @y = start.y
+      @dx = dx
+      @dy = dy
+      @x_step = @dx.sign
+      @y_step = @dy.sign
+      @progress = 0
+    end
+
+    def inc_y
+      @progress += @dx.abs
+      steps_needed = @dy.abs
+      while @progress >= steps_needed
+        @progress -= steps_needed
+        @x += @x_step
+      end
+      @y += @y_step
+    end
+
+    def inc_x
+      @progress += @dy.abs
+      steps_needed = @dx.abs
+      while @progress >= steps_needed
+        @progress -= steps_needed
+        @y += @y_step
+      end
+      @x += @x_step
+    end
+  end
+
+
+
+
   def calc_visible_positions
     @debug_output.clear if $args.debug.active?
 
@@ -87,80 +124,38 @@ class FieldOfView
       next calc_pillar_shadow(obstacle) if obstacle.w == 1 && obstacle.h == 1
 
       if obstacle.w > 1 && obstacle.h == 1 && obstacle.y != @from.y
-        obstacle_left = obstacle.grid_left
-        obstacle_right = obstacle.grid_right
-
         dy = obstacle.y - @from.y
-        dx_left = obstacle_left - @from.x
-        dx_right = obstacle_right - @from.x
-        y_step = dy.sign
-        left_step = dx_left.sign
-        right_step = dx_right.sign
+        left_line_start = [obstacle.grid_left - 1, obstacle.y]
+        left_line = Line.new(left_line_start, dx: obstacle.grid_left - @from.x, dy: dy)
+        right_line_start = [obstacle.grid_right + 1, obstacle.y]
+        right_line = Line.new(right_line_start, dx: obstacle.grid_right - @from.x, dy: dy)
 
-        x_left = obstacle_left
-        x_left += left_step if dx_left.positive? # Adjustment for left diagonal position
-        x_right = obstacle_right
-        x_right += right_step if dx_right.negative? # Adjustment for right diagonal position
+        while left_line.y > 0 && left_line.y < @h - 1
+          left_line.inc_y
+          right_line.inc_y
 
-        steps_needed = dy.abs
-        x_left_progress = 0
-        x_left_progress -= dx_left.abs if dx_left.positive? # Adjustment for left diagonal position
-        x_right_progress = 0
-        x_right_progress -= dx_right.abs if dx_right.negative? # Adjustment for right diagonal position
-        y = obstacle.y + y_step
-        while y >= 0 && y < @h
-          x_left_progress += dx_left.abs
-          while x_left_progress >= steps_needed
-            x_left_progress -= steps_needed
-            x_left = [x_left + left_step, 0].max
+          shadow_start = [(left_line.x + 1), 0].max
+          shadow_end = [(right_line.x - 1), @w - 1].min
+          (shadow_start..shadow_end).each do |x|
+            set_invisible(x, left_line.y)
           end
-          x_right_progress += dx_right.abs
-          while x_right_progress >= steps_needed
-            x_right_progress -= steps_needed
-            x_right = [x_right + right_step, @w - 1].min
-          end
-          (x_left..x_right).each do |x|
-            set_invisible(x, y)
-          end
-          y += y_step
         end
       elsif obstacle.h > 1 && obstacle.w == 1 && obstacle.x != @from.x
-        obstacle_bottom = obstacle.grid_bottom
-        obstacle_top = obstacle.grid_top
-
         dx = obstacle.x - @from.x
-        dy_bottom = obstacle_bottom - @from.y
-        dy_top = obstacle_top - @from.y
-        x_step = dx.sign
-        bottom_step = dy_bottom.sign
-        top_step = dy_top.sign
+        bottom_line_start = [obstacle.x, obstacle.grid_bottom - 1]
+        bottom_line = Line.new(bottom_line_start, dx: dx, dy: obstacle.grid_bottom - @from.y)
+        top_line_start = [obstacle.x, obstacle.grid_top + 1]
+        top_line = Line.new(top_line_start, dx: dx, dy: obstacle.grid_top - @from.y)
 
-        y_bottom = obstacle_bottom
-        y_bottom += bottom_step if dy_bottom.positive? # Adjustment for bottom diagonal position
-        y_top = obstacle_top
-        y_top += top_step if dy_top.negative? # Adjustment for top diagonal position
+        while bottom_line.x > 0 && bottom_line.x < @w - 1
+          bottom_line.inc_x
+          top_line.inc_x
 
-        steps_needed = dx.abs
-        y_bottom_progress = 0
-        y_bottom_progress -= dy_bottom.abs if dy_bottom.positive? # Adjustment for bottom diagonal position
-        y_top_progress = 0
-        y_top_progress -= dy_top.abs if dy_top.negative? # Adjustment for top diagonal position
-        x = obstacle.x + x_step
-        while x >= 0 && x < @w
-          y_bottom_progress += dy_bottom.abs
-          while y_bottom_progress >= steps_needed
-            y_bottom_progress -= steps_needed
-            y_bottom = [y_bottom + bottom_step, 0].max
+          shadow_start = [(bottom_line.y + 1), 0].max
+          shadow_end = [(top_line.y - 1), @h - 1].min
+          (shadow_start..shadow_end).each do |y|
+            set_invisible(bottom_line.x, y)
           end
-          y_top_progress += dy_top.abs
-          while y_top_progress >= steps_needed
-            y_top_progress -= steps_needed
-            y_top = [y_top + top_step, @h - 1].min
-          end
-          (y_bottom..y_top).each do |y|
-            set_invisible(x, y)
-          end
-          x += x_step
         end
       end
     end
