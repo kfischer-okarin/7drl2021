@@ -79,6 +79,8 @@ class FieldOfView
   class Line
     attr_reader :x, :y
 
+    attr_accessor :progress
+
     def initialize(start, dx:, dy:)
       @x = start.x
       @y = start.y
@@ -123,12 +125,21 @@ class FieldOfView
 
       next calc_pillar_shadow(obstacle) if obstacle.w == 1 && obstacle.h == 1
 
+      # TODO: Remove w/h > 1 and remove pillar shadow
       if obstacle.w > 1 && obstacle.h == 1 && obstacle.y != @from.y
         dy = obstacle.y - @from.y
+
+        dx_left = obstacle.grid_left - @from.x
         left_line_start = [obstacle.grid_left - 1, obstacle.y]
-        left_line = Line.new(left_line_start, dx: obstacle.grid_left - @from.x, dy: dy)
+        left_line_start.x += 1 if dx_left.positive? # Special case for diagonal left
+        left_line = Line.new(left_line_start, dx: dx_left, dy: dy)
+        left_line.progress -= 1 if dx_left.positive? # Special case for diagonal left
+
+        dx_right = obstacle.grid_right - @from.x
         right_line_start = [obstacle.grid_right + 1, obstacle.y]
-        right_line = Line.new(right_line_start, dx: obstacle.grid_right - @from.x, dy: dy)
+        right_line_start.x -= 1 if dx_right.negative? # Special case for diagonal right
+        right_line = Line.new(right_line_start, dx: dx_right, dy: dy)
+        right_line.progress -= 1 if dx_right.negative? # Special case for diagonal right
 
         while left_line.y > 0 && left_line.y < @h - 1
           left_line.inc_y
@@ -142,10 +153,18 @@ class FieldOfView
         end
       elsif obstacle.h > 1 && obstacle.w == 1 && obstacle.x != @from.x
         dx = obstacle.x - @from.x
+
+        dy_bottom = obstacle.grid_bottom - @from.y
         bottom_line_start = [obstacle.x, obstacle.grid_bottom - 1]
-        bottom_line = Line.new(bottom_line_start, dx: dx, dy: obstacle.grid_bottom - @from.y)
+        bottom_line_start.y += 1 if dy_bottom.positive? # Special case for diagonal bottom
+        bottom_line = Line.new(bottom_line_start, dx: dx, dy: dy_bottom)
+        bottom_line.progress -= 1 if dy_bottom.positive? # Special case for diagonal bottom
+
+        dy_top = obstacle.grid_top - @from.y
         top_line_start = [obstacle.x, obstacle.grid_top + 1]
-        top_line = Line.new(top_line_start, dx: dx, dy: obstacle.grid_top - @from.y)
+        top_line_start.y -= 1 if dy_top.negative? # Special case for diagonal top
+        top_line = Line.new(top_line_start, dx: dx, dy: dy_top)
+        top_line.progress -= 1 if dy_top.negative? # Special case for diagonal top
 
         while bottom_line.x > 0 && bottom_line.x < @w - 1
           bottom_line.inc_x

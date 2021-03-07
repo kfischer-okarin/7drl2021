@@ -318,7 +318,7 @@ def test_fov_diagonal_bottom_of_vertical_wall(_args, assert)
   ].join("\n")
 end
 
-def test_fov_diagonal_top_of_vertical_wall(_args, assert)
+def test_fov_diagonal_up_of_vertical_wall(_args, assert)
   map = FieldOfViewTest::Map.new([15, 9])
   map.block_sight [2, 4, 1, 4]
   field_of_view = FieldOfView.new(map)
