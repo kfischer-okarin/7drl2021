@@ -337,6 +337,66 @@ def test_fov_diagonal_up_of_vertical_wall(_args, assert)
   ].join("\n")
 end
 
+def test_fov_left_of_horizontal_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([7, 3])
+  map.block_sight [2, 1, 3, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [0, 1])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '       ',
+    '@ oxxxx',
+    '       '
+  ].join("\n")
+end
+
+def test_fov_right_of_horizontal_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([7, 3])
+  map.block_sight [2, 1, 3, 1]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [6, 1])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    '       ',
+    'xxxxo @',
+    '       '
+  ].join("\n")
+end
+
+def test_fov_down_of_vertical_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([3, 7])
+  map.block_sight [1, 2, 1, 3]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [1, 0])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    ' x ',
+    ' x ',
+    ' x ',
+    ' x ',
+    ' o ',
+    '   ',
+    ' @ '
+  ].join("\n")
+end
+
+def test_fov_up_of_vertical_wall(_args, assert)
+  map = FieldOfViewTest::Map.new([3, 7])
+  map.block_sight [1, 2, 1, 3]
+  field_of_view = FieldOfView.new(map)
+  field_of_view.calculate(from: [1, 6])
+
+  assert.equal! map.visibility_map(field_of_view), [
+    ' @ ',
+    '   ',
+    ' o ',
+    ' x ',
+    ' x ',
+    ' x ',
+    ' x '
+  ].join("\n")
+end
+
 def test_closest_point_on_wall_to(_args, assert)
   [
     { wall: [-4, 2, 2, 1], result: [-3, 2] },
