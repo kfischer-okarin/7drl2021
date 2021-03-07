@@ -120,9 +120,6 @@ class FieldOfView
 
       @debug_output.render(obstacle) if $args.debug.active?
 
-      next calc_pillar_shadow(obstacle) if obstacle.w == 1 && obstacle.h == 1
-
-      # TODO: Remove w/h > 1 and remove pillar shadow
       if obstacle.h == 1
         if @from.y == obstacle.y
           wall_part = @from.x < obstacle.x ? obstacle : [obstacle.grid_right, obstacle.y, 1, 1]
@@ -199,39 +196,5 @@ class FieldOfView
 
   def set_invisible(x, y)
     @visible[x][y] = false
-  end
-
-  def calc_pillar_shadow(obstacle)
-    dx = obstacle.x - @from.x
-    dy = obstacle.y - @from.y
-
-    if dy.zero?
-      if dx.positive?
-        ((obstacle.x + 1)...@w).each do |x|
-          set_invisible(x, @from.y)
-        end
-      elsif dx.negative?
-        (0...obstacle.x).each do |x|
-          set_invisible(x, @from.y)
-        end
-      end
-    elsif dx.zero?
-      if dy.positive?
-        ((obstacle.y + 1)...@h).each do |y|
-          set_invisible(@from.x, y)
-        end
-      elsif dy.negative?
-        (0...obstacle.y).each do |y|
-          set_invisible(@from.x, y)
-        end
-      end
-    else
-      pos = [obstacle.x + dx, obstacle.y + dy]
-      while pos.inside_grid_rect? self
-        set_invisible(pos.x, pos.y)
-        pos.x += dx
-        pos.y += dy
-      end
-    end
   end
 end
