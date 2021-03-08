@@ -45,8 +45,9 @@ class Tile
   end
 end
 
-# TODO: Add VisibleWorldWrapper around RenderedWorld
 class RenderedWorld
+  attr_reader :world
+
   def initialize(world)
     @world = world
   end
@@ -65,10 +66,129 @@ class RenderedWorld
   end
 end
 
+class VisibleWorld
+  attr_writer :updated
+
+  def initialize(rendered_world, size:)
+    @rendered_world = rendered_world
+    @rect = [0, 0, size.x, size.y]
+    @origin_x = 0
+    @origin_y = 0
+    @field_of_view = FieldOfView.new(self)
+    @updated = false
+  end
+
+  def size
+    [@rect.w, @rect.h]
+  end
+
+  def tile_at(position)
+    return unless @field_of_view.visible?(position.x - @origin_x, position.y - @origin_y)
+
+    @rendered_world.tile_at(position)
+  end
+
+  def changes_in_rect?(rect)
+    @updated || @rendered_world.changes_in_rect?(rect)
+  end
+
+  def update(player_position, origin)
+    return if @player_position == player_position && origin == [@origin_x, @origin_y] && !@rendered_world.changes_in_rect?(@rect)
+
+    @player_position = player_position
+    @origin_x = @rect.x = origin.x
+    @origin_y = @rect.y = origin.y
+    @field_of_view.calculate(from: relative_position(@player_position))
+    @updated = true
+  end
+
+  def relative_position(position)
+    [position.x - @origin_x, position.y - @origin_y]
+  end
+
+  def merge_to_horizontal_wall(obstacle, obstacles)
+    rect = [obstacle.x, obstacle.y, 1, 1]
+    used_obstacles = [obstacle]
+    while obstacles.include? [rect.x - 1, rect.y]
+      used_obstacles << [rect.x - 1, rect.y]
+      rect.x -= 1
+      rect.w += 1
+    end
+    while obstacles.include? [rect.grid_right + 1, rect.y]
+      used_obstacles << [rect.grid_right + 1, rect.y]
+      rect.w += 1
+    end
+
+    return [nil, nil] unless rect.w > 1
+
+    [rect, used_obstacles]
+  end
+
+  def merge_to_vertical_wall(obstacle, obstacles)
+    rect = [obstacle.x, obstacle.y, 1, 1]
+    used_obstacles = [obstacle]
+    while obstacles.include? [rect.x, rect.y - 1]
+      used_obstacles << [rect.x, rect.y - 1]
+      rect.y -= 1
+      rect.h += 1
+    end
+    while obstacles.include? [rect.x, rect.grid_top + 1]
+      used_obstacles << [rect.x, rect.grid_top + 1]
+      rect.h += 1
+    end
+
+    return [nil, nil] unless rect.h > 1
+
+    [rect, used_obstacles]
+  end
+
+  def merge_obstacles(obstacles)
+    in_horizontal_wall = Set.new
+    in_vertical_wall = Set.new
+    [].tap { |result|
+      obstacles.each do |obstacle|
+        unless in_horizontal_wall.include? obstacle
+          merged, used_obstacles = merge_to_horizontal_wall(obstacle, obstacles)
+
+          if merged
+            result << merged
+            in_horizontal_wall.add_all used_obstacles
+          end
+        end
+
+        unless in_vertical_wall.include? obstacle
+          merged, used_obstacles = merge_to_vertical_wall(obstacle, obstacles)
+
+          if merged
+            result << merged
+            in_vertical_wall.add_all used_obstacles
+          end
+        end
+        next if in_vertical_wall.include?(obstacle) || in_horizontal_wall.include?(obstacle)
+
+        result << [obstacle.x, obstacle.y, 1, 1]
+      end
+    }
+  end
+
+  def obstacles
+    [].tap { |result|
+      obstacles = Set.new
+      @rendered_world.world.entities_with(:block_movement).each { |entity|
+        position = entity[:position]
+        obstacles << relative_position(position) if position.inside_grid_rect? @rect
+      }
+      merge_obstacles(obstacles).each do |obstacle|
+        result << obstacle
+      end
+    }
+  end
+end
+
 class WorldView < TilemapView
   def initialize(world, size:)
     super(
-      tilemap: RenderedWorld.new(world),
+      tilemap: world,
       name: :map_view,
       rect: [0, 0, size.x, size.y],
       tile_size: 24,

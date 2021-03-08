@@ -16,6 +16,12 @@ class Set
     @values.size
   end
 
+  def add_all(other)
+    other.each do |element|
+      self << element
+    end
+  end
+
   def -(other)
     Set.new.tap { |result|
       each do |element|

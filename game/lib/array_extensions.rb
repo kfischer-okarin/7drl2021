@@ -18,4 +18,12 @@ class Array
       sub_array.fill(value)
     end
   end
+
+  def update_with_index_2d
+    each_with_index do |sub_array, index1|
+      (0...sub_array.size).each do |index2|
+        sub_array[index2] = yield sub_array[index2], index1, index2
+      end
+    end
+  end
 end

@@ -7,9 +7,9 @@ require 'lib/set.rb'
 require 'lib/tilemap_view/require.rb'
 
 require 'app/resources.rb'
+require 'app/field_of_view.rb'
 require 'app/world.rb'
 require 'app/world_view.rb'
-require 'app/field_of_view.rb'
 
 class Renderer
   def render_string(args, string, attributes)
@@ -44,17 +44,31 @@ class Input
   end
 end
 
+def handle_player_position_update(world, player_id)
+  player_position = world.get_entity_property(player_id, :position)
+  $world_view.center_on(player_position)
+  $visible_world.update(player_position, $world_view.origin)
+end
+
 def setup(args)
   world = World.new
   args.state.world = world
   args.state.player_id = world.add_entity :player, position: [2, 5], velocity: [0, 0]
-  20.times do
-    world.add_entity :tree, position: [(rand * 20).floor, (rand * 20).floor], block_movement: true
+  10.times do
+    pos = [(rand * 20).floor, (rand * 20).floor]
+    wall_length = 3 + (rand * 3).ceil
+    size = rand > 0.5 ? [1, wall_length] : [wall_length, 1]
+    (pos + size).each_position do |position|
+      next if world.entities_at(position).any? { |entity| entity[:block_movement] }
+
+      world.add_entity :tree, position: position, block_movement: true
+    end
   end
-  $world_view = WorldView.new(world, size: [40, 27])
+  $visible_world = VisibleWorld.new(RenderedWorld.new(world), size: [40, 27])
+  $world_view = WorldView.new($visible_world, size: $visible_world.size)
   $world_view.x = 0
   $world_view.y = 3 * 24
-  $world_view.center_on(world.get_entity_property(args.state.player_id, :position))
+  handle_player_position_update(world, args.state.player_id)
   $renderer = Renderer.new
   $input = Input.new(args.state.player_id)
 end
@@ -66,13 +80,14 @@ def tick(args)
   if $input.any?(args)
     $input.apply_to(args, world)
     world.tick
-    $world_view.center_on(world.get_entity_property(args.state.player_id, :position))
+    handle_player_position_update(world, args.state.player_id)
   end
 
   args.outputs.background_color = [0, 0, 0]
   $world_view.tick(args)
   args.outputs.primitives << $world_view
   world.changed_positions.clear
+  $visible_world.updated = false
   world.messages[0..2].each_with_index do |message, index|
     $renderer.render_string(args, message, x: 24, y: index * 24, a: 255 - 90 * index)
   end
