@@ -17,6 +17,8 @@ class TilemapView
     end
 
     def render_tile_at(args, tile, position)
+      return unless tile
+
       target = args.outputs[@path]
       tile.x = position.x * @tile_size
       tile.y = position.y * @tile_size
