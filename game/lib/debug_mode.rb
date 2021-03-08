@@ -4,6 +4,7 @@ module DebugExtension
       @args = args
       @active = false
       @debug_logs = []
+      @static_debug_logs = {}
       @static_primitives = []
       @last_debug_y = 720
       @reset_handlers = []
@@ -15,6 +16,10 @@ module DebugExtension
 
     def active?
       @active
+    end
+
+    def static_log(name, message)
+      @static_debug_logs[name] = message
     end
 
     def log(message, pos = nil)
@@ -30,6 +35,7 @@ module DebugExtension
 
       handle_debug_function
 
+      add_static_logs
       render_debug_logs
       render_debug_primitives
     end
@@ -67,6 +73,12 @@ module DebugExtension
 
     def handle_reset
       @reset_handlers.each(&:call)
+    end
+
+    def add_static_logs
+      @static_debug_logs.each_value do |message|
+        log(message)
+      end
     end
 
     def render_debug_logs
