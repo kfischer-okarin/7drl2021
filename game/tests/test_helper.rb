@@ -20,6 +20,17 @@ module TestHelper
         render_target.primitives.clear
       end
     end
+
+    def as_positions(strings)
+      [].tap { |result|
+        strings.each_with_index do |string, y_from_top|
+          y = strings.size - y_from_top - 1
+          string.chars.each_with_index do |char, x|
+            result << [x, y] if char == 'x'
+          end
+        end
+      }
+    end
   end
 end
 

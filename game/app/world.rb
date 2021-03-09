@@ -51,6 +51,10 @@ class World
     @entities_by_position[position] || []
   end
 
+  def has?(entity_components, at:)
+    entities_at(at).any? { |entity| entity_components.all? { |component, value| entity[component] == value } }
+  end
+
   def serialize
     "World.new(entities: #{@entities.inspect}, next_entity_id: #{@next_entity_id})"
   end

@@ -38,6 +38,8 @@ class Tile
         at_position([0, 11]).merge(r: 218, g: 212, b: 94)
       when :tree
         at_position([5, 15]).merge(r: 52, g: 101, b: 36)
+      when :wall
+        at_position([3, 13]).merge(r: 78, g: 74, b: 78)
       when :floor
         for_letter('.').merge(r: 255, g: 255, b: 255)
       end
