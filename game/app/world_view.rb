@@ -100,7 +100,9 @@ class VisibleWorld
     @player_position = player_position
     @origin_x = @rect.x = origin.x
     @origin_y = @rect.y = origin.y
-    @field_of_view.calculate(from: relative_position(@player_position))
+    $args.debug.time_block_last_execute :calc_fov_total do
+      @field_of_view.calculate(from: relative_position(@player_position))
+    end
     @updated = true
   end
 
@@ -180,6 +182,7 @@ class VisibleWorld
         position = entity[:position]
         obstacles << relative_position(position) if position.inside_grid_rect? @rect
       }
+      # TODO: Merge in advance
       merge_obstacles(obstacles).each do |obstacle|
         result << obstacle
       end

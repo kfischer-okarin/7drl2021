@@ -10,6 +10,13 @@ module DebugExtension
       @reset_handlers = []
     end
 
+    def time_block_last_execute(name)
+      start = Time.now.to_f
+      yield
+      duration_ms = ((Time.now.to_f - start) * 1000).floor
+      static_log(:"time_#{name}", "Last execution of #{name}: #{duration_ms}ms")
+    end
+
     def static_primitives
       @static_primitives
     end
