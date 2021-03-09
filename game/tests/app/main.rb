@@ -2,8 +2,8 @@ require 'tests/test_helper.rb'
 
 def test_render_world(args, assert)
   world = World.new
-  world.add_entity :player, position: [12, 13]
-  world_view = WorldView.new(world, size: [5, 5])
+  world.add_entity type: :player, position: [12, 13]
+  world_view = WorldView.new(RenderedWorld.new(world), size: [5, 5])
   world_view.origin = [10, 10]
   world_view.tick(args)
   args.outputs.primitives << world_view
@@ -33,7 +33,7 @@ end
 
 def test_input_sets_player_velocity(args, assert)
   world = World.new
-  player_id = world.add_entity :player, position: [2, 5]
+  player_id = world.add_entity type: :player, position: [2, 5]
   input = Input.new(player_id)
 
   TestHelper.simulate_keypress(args, :left)
