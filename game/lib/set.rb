@@ -1,9 +1,9 @@
 class Set
   include Enumerable
 
-  def initialize(*elements)
+  def initialize(elements = nil)
     @values = {}
-    elements.each do |element|
+    (elements || []).each do |element|
       self << element
     end
   end
@@ -31,7 +31,7 @@ class Set
   end
 
   def dup
-    Set.new(*to_a)
+    Set.new(to_a)
   end
 
   def <<(element)
@@ -59,7 +59,7 @@ class Set
   end
 
   def inspect
-    "Set.new(#{to_a.map(&:inspect).join(', ')})"
+    "Set.new(#{to_a.inspect})"
   end
 
   def to_s

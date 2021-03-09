@@ -2,9 +2,9 @@
 module Resources
   # Minimal set implementation
   class Set
-    def initialize(*elements)
+    def initialize(elements = nil)
       @values = {}
-      elements.each do |element|
+      (elements || []).each do |element|
         self << element
       end
     end
@@ -50,7 +50,7 @@ module Resources
   class ResourceGroup
     include ContainingResourceGroup
 
-    RESERVED_NAMES = Set.new(:name, :extension, :add, :initialize, :group, :data)
+    RESERVED_NAMES = Set.new(%i[name extension add initialize group data])
 
     attr_reader :name, :extension
 
