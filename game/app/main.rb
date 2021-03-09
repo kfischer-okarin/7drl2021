@@ -10,6 +10,7 @@ require 'app/resources.rb'
 require 'app/field_of_view.rb'
 require 'app/world.rb'
 require 'app/world_view.rb'
+require 'app/world_generator.rb'
 
 class Renderer
   def render_string(args, string, attributes)
@@ -51,19 +52,10 @@ def handle_player_position_update(world, player_id)
 end
 
 def setup(args)
-  world = World.new
+  generator = WorldGenerator.new
+  world = generator.generate
   args.state.world = world
-  args.state.player_id = world.add_entity :player, position: [2, 5], velocity: [0, 0]
-  10.times do
-    pos = [(rand * 20).floor, (rand * 20).floor]
-    wall_length = 3 + (rand * 3).ceil
-    size = rand > 0.5 ? [1, wall_length] : [wall_length, 1]
-    (pos + size).each_position do |position|
-      next if world.entities_at(position).any? { |entity| entity[:block_movement] }
-
-      world.add_entity :tree, position: position, block_movement: true
-    end
-  end
+  args.state.player_id = world.add_entity type: :player, position: [2, 5], velocity: [0, 0]
   $visible_world = VisibleWorld.new(RenderedWorld.new(world), size: [40, 27])
   $world_view = WorldView.new($visible_world, size: $visible_world.size)
   $world_view.x = 0

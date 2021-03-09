@@ -26,9 +26,9 @@ class World
     @entities[id]
   end
 
-  def add_entity(type, components)
+  def add_entity(components)
     next_entity_id.tap { |id|
-      entity = { type: type, id: id }.merge(components)
+      entity = { id: id }.merge(components)
       @entities[id] = entity
       index_by_components entity
       index_by_position entity
@@ -73,7 +73,7 @@ class World
 
   def index_by_components(entity)
     entity.each do |component, _|
-      next if component == :id || component == :type
+      next if component == :id
 
       @entities_by_component[component] ||= []
       @entities_by_component[component] << entity
