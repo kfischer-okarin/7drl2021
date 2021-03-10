@@ -52,19 +52,28 @@ class RenderedWorld
 
   def initialize(world)
     @world = world
+    @tiles = {}
   end
 
   def tile_at(position)
+    @tiles[position] = nil if @world.changed_positions.include? position
+
+    @tiles[position] ||= calc_tile_at(position)
+  end
+
+  def changes_in_rect?(rect)
+    @world.changed_positions.any? { |position| position.inside_grid_rect? rect }
+  end
+
+  private
+
+  def calc_tile_at(position)
     entities = @world.entities_at(position)
     if entities.empty?
       Tile.for(:floor)
     else
       Tile.for(entities[0][:type])
     end
-  end
-
-  def changes_in_rect?(rect)
-    @world.changed_positions.any? { |position| position.inside_grid_rect? rect }
   end
 end
 
