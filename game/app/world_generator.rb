@@ -134,6 +134,84 @@ class CapsuleShapeRoom
   end
 end
 
+class Structure
+  attr_reader :w, :h, :tiles
+
+  def initialize(w:, h:, tiles: nil)
+    @w = w
+    @h = h
+    @tiles = tiles || Array.new(@w * @h)
+  end
+
+  def serialize
+    "Structure.new(w: #{@w}, h: #{@h}, tiles: #{@tiles.inspect})"
+  end
+
+  alias_method :to_s, :serialize
+  alias_method :inspect, :serialize
+
+  def [](x, y)
+    @tiles[tile_index(x, y)]
+  end
+
+  def []=(x, y, value)
+    index = tile_index(x, y)
+    return unless index
+
+    @tiles[index] = value
+  end
+
+  def each(&block)
+    enumerator = Enumerator.new do |yielder|
+      @tiles.each_with_index do |tile, index|
+        yielder.yield(tile, index % @w, index.idiv(@w))
+      end
+    end
+
+    if block
+      enumerator.each(&block)
+    else
+      enumerator
+    end
+  end
+
+  def insert(area, at:)
+    area.each do |value, x, y|
+      self[at.x + x, at.y + y] = value
+    end
+  end
+
+  def rotated_right_90
+    Structure.new(w: @h, h: @w).tap { |result|
+      each do |tile, x, y|
+        result[y, @w - x - 1] = tile
+      end
+    }
+  end
+
+  def rotated_left_90
+    Structure.new(w: @h, h: @w).tap { |result|
+      each do |tile, x, y|
+        result[@h - y - 1, x] = tile
+      end
+    }
+  end
+
+  def rotated_180
+    Structure.new(w: @w, h: @h).tap { |result|
+      each do |tile, x, y|
+        result[@w - x - 1, @h - y - 1] = tile
+      end
+    }
+  end
+
+  def tile_index(x, y, w = @w)
+    return if x.negative? || y.negative? || x >= @w || y >= @h
+
+    y * w + x
+  end
+end
+
 class WorldGenerator
   def initialize
     @rng = RNG.new
