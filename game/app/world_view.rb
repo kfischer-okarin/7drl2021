@@ -1,3 +1,11 @@
+class Color
+  YELLOW = { r: 218, g: 212, b: 94 }.freeze
+  DARK_GREEN = { r: 52, g: 101, b: 36 }.freeze
+  DARK_BROWN = { r: 68, g: 36, b: 52 }.freeze
+  DARK_GRAY = { r: 78, g: 74, b: 78 }.freeze
+  WHITE = { r: 222, g: 238, b: 214 }.freeze
+end
+
 class Tile
   class << self
     def at_position(position)
@@ -35,13 +43,13 @@ class Tile
     def for(entity_type)
       case entity_type
       when :player
-        at_position([0, 11]).merge(r: 218, g: 212, b: 94)
+        at_position([0, 11]).merge(Color::YELLOW)
       when :tree
-        at_position([5, 15]).merge(r: 52, g: 101, b: 36)
+        at_position([5, 15]).merge(Color::DARK_GREEN)
       when :wall
-        at_position([3, 13]).merge(r: 78, g: 74, b: 78)
+        at_position([3, 13]).merge(Color::DARK_GRAY)
       when :floor
-        for_letter('.').merge(r: 255, g: 255, b: 255)
+        for_letter('.').merge(Color::WHITE)
       end
     end
   end
