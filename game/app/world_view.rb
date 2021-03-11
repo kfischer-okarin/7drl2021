@@ -31,6 +31,10 @@ class Tile
         [x, 8]
       when '.'
         [14, 13]
+      when '+'
+        [11, 13]
+      when '-'
+        [13, 13]
       else
         [0, 15]
       end

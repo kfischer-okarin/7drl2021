@@ -3,23 +3,37 @@ class StructureEditor
     values = attributes || {}
     @initialized = values[:initialized] || false
     @cell_size = values[:cell_size] || 48
-    self.grid_size = [values[:w] || 2, values[:h] || 2]
-    @structure = Structure.new(w: @w, h: @h)
-    @grid_squares = build_grid_squares
+    @w = values[:w] || 2
+    @h = values[:h] || 2
+    update_grid
     @palette_tiles = build_palette_tiles
     @selected_tile_index = 0
+    @size_handles = [
+      Tile.for_letter('-').merge(x: 24 * 1, y: 24, method: :dec_w),
+      Tile.for_letter('+').merge(x: 24 * 3, y: 24, method: :inc_w),
+      Tile.for_letter('-').merge(x: 24 * 5, y: 24, method: :dec_h),
+      Tile.for_letter('+').merge(x: 24 * 7, y: 24, method: :inc_h),
+    ]
   end
 
-  def grid_size=(value)
-    @w, @h = value
+  def update_grid
     @grid_origin_x = (1280 - @w * @cell_size).idiv 2
     @grid_origin_y = (720 - @h * @cell_size).idiv 2
+    if @structure
+      old_structure = @structure
+      @structure = Structure.new(w: @w, h: @h)
+      @structure.insert(old_structure, at: [0, 0])
+    else
+      @structure = Structure.new(w: @w, h: @h)
+    end
+    @grid_squares = build_grid_squares
   end
 
   def tick(args)
     handle_click(args.inputs)
     draw_grid(args)
     draw_palette(args)
+    draw_size_handles(args)
   end
 
   private
@@ -29,6 +43,7 @@ class StructureEditor
 
     handle_palette_selection(gtk_inputs.mouse)
     handle_draw(gtk_inputs.mouse)
+    handle_resize(gtk_inputs.mouse)
   end
 
   def handle_palette_selection(mouse)
@@ -48,6 +63,35 @@ class StructureEditor
 
     selected_tile = @palette_tiles[@selected_tile_index]
     @structure[clicked_square[:grid_x], clicked_square[:grid_y]] = mouse.button_right ? nil : selected_tile[:prototype]
+  end
+
+  def handle_resize(mouse)
+    clicked_resizer = @size_handles.find { |handle|
+      mouse.inside_rect? handle
+    }
+    return unless clicked_resizer
+
+    send(clicked_resizer[:method])
+  end
+
+  def inc_w
+    @w = [@w + 1, 10].min
+    update_grid
+  end
+
+  def dec_w
+    @w = [@w - 1, 1].max
+    update_grid
+  end
+
+  def inc_h
+    @h = [@h + 1, 10].min
+    update_grid
+  end
+
+  def dec_h
+    @h = [@h - 1, 1].max
+    update_grid
   end
 
   PROTOTYPES = [
@@ -116,5 +160,13 @@ class StructureEditor
         grid_y: y
       }.border
     end
+  end
+
+  def draw_size_handles(args)
+    args.outputs.primitives << [
+      Tile.for_letter('W').merge(x: 24 * 2, y: 24),
+      Tile.for_letter('H').merge(x: 24 * 6, y: 24)
+    ]
+    args.outputs.primitives << @size_handles
   end
 end
