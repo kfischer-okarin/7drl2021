@@ -10,8 +10,9 @@ class DataManager
     end
 
     def [](id)
-      eval($gtk.read_file(filename(id)))
-      # $gtk.deserialize_state(filename(id))
+      deserialized_hash = eval($gtk.read_file(filename(id)))
+      deserialize_class = Kernel.const_get deserialized_hash[:deserialize_class]
+      deserialize_class.deserialize deserialized_hash
     end
 
     def []=(id, value)

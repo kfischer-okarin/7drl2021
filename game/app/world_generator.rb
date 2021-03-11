@@ -143,8 +143,16 @@ class Structure
     @tiles = tiles || Array.new(@w * @h)
   end
 
+  def to_h
+    { w: @w, h: @h, tiles: @tiles }
+  end
+
+  def self.deserialize(hash)
+    new(w: hash[:w], h: hash[:h], tiles: hash[:tiles])
+  end
+
   def serialize
-    "Structure.new(w: #{@w}, h: #{@h}, tiles: #{@tiles.inspect})"
+    to_h.merge(deserialize_class: self.class.name).inspect
   end
 
   alias_method :to_s, :serialize
