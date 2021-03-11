@@ -15,7 +15,8 @@ class StructureEditor
       toolbar_icon('-', 5).merge(method: :dec_h),
       toolbar_icon('H', 6),
       toolbar_icon('+', 7).merge(method: :inc_h),
-      toolbar_icon('S', 9).merge(method: :save),
+      toolbar_icon('N', 9).merge(method: :new_structure),
+      toolbar_icon('S', 10).merge(method: :save),
     ]
     @data_manager = DataManager.new
     @structure_count = @data_manager.index[:structures] || 0
@@ -60,8 +61,8 @@ class StructureEditor
     @static_toolbar.dup.tap { |result|
       if @structure_count.positive?
         result.concat [
-          toolbar_icon(:arrow_left, 11).merge(method: :load_previous),
-          toolbar_icon(:arrow_right, 13).merge(method: :load_next)
+          toolbar_icon(:arrow_left, 12).merge(method: :load_previous),
+          toolbar_icon(:arrow_right, 14).merge(method: :load_next)
         ]
       end
     }
@@ -146,6 +147,11 @@ class StructureEditor
     load_structure((@structure_id + 1) % @structure_count)
   end
 
+  def new_structure
+    @structure_id = -1
+    @structure = nil
+    after_size_update
+  end
 
   PROTOTYPES = [
     { type: :tree, block_movement: true },
@@ -226,6 +232,6 @@ class StructureEditor
     args.outputs.primitives << toolbar
     return if @structure_id == -1
 
-    args.outputs.primitives << [12 * 24, 48, @structure_id.to_s, 255, 255, 255].label
+    args.outputs.primitives << [13 * 24, 48, @structure_id.to_s, 255, 255, 255].label
   end
 end
