@@ -35,6 +35,10 @@ class Tile
         [11, 13]
       when '-'
         [13, 13]
+      when :arrow_left
+        [1, 14]
+      when :arrow_right
+        [0, 14]
       else
         [0, 15]
       end

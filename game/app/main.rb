@@ -11,6 +11,7 @@ require 'app/field_of_view.rb'
 require 'app/world.rb'
 require 'app/world_view.rb'
 require 'app/world_generator.rb'
+require 'app/data_manager.rb'
 require 'app/structure_editor.rb'
 
 class Renderer

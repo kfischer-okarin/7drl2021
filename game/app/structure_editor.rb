@@ -5,20 +5,30 @@ class StructureEditor
     @cell_size = values[:cell_size] || 48
     @w = values[:w] || 2
     @h = values[:h] || 2
-    update_grid
+    after_size_update
     @palette_tiles = build_palette_tiles
     @selected_tile_index = 0
-    @size_handles = [
-      Tile.for_letter('-').merge(x: 24 * 1, y: 24, method: :dec_w),
-      Tile.for_letter('+').merge(x: 24 * 3, y: 24, method: :inc_w),
-      Tile.for_letter('-').merge(x: 24 * 5, y: 24, method: :dec_h),
-      Tile.for_letter('+').merge(x: 24 * 7, y: 24, method: :inc_h),
+    @static_toolbar = [
+      toolbar_icon('-', 1).merge(method: :dec_w),
+      toolbar_icon('W', 2),
+      toolbar_icon('+', 3).merge(method: :inc_w),
+      toolbar_icon('-', 5).merge(method: :dec_h),
+      toolbar_icon('H', 6),
+      toolbar_icon('+', 7).merge(method: :inc_h),
+      toolbar_icon('S', 9).merge(method: :save),
     ]
+    @data_manager = DataManager.new
+    @structure_count = @data_manager.index[:structures] || 0
+    @structure_id = -1
   end
 
   def update_grid
     @grid_origin_x = (1280 - @w * @cell_size).idiv 2
     @grid_origin_y = (720 - @h * @cell_size).idiv 2
+    @grid_squares = build_grid_squares
+  end
+
+  def after_size_update
     if @structure
       old_structure = @structure
       @structure = Structure.new(w: @w, h: @h)
@@ -26,24 +36,43 @@ class StructureEditor
     else
       @structure = Structure.new(w: @w, h: @h)
     end
-    @grid_squares = build_grid_squares
+
+    update_grid
+  end
+
+  def after_structure_update
+    @w = @structure.w
+    @h = @structure.w
+
+    update_grid
   end
 
   def tick(args)
     handle_click(args.inputs)
     draw_grid(args)
     draw_palette(args)
-    draw_size_handles(args)
+    draw_toolbar(args)
   end
 
   private
+
+  def toolbar
+    @static_toolbar.dup.tap { |result|
+      if @structure_count.positive?
+        result.concat [
+          toolbar_icon(:arrow_left, 11).merge(method: :load_previous),
+          toolbar_icon(:arrow_right, 13).merge(method: :load_next)
+        ]
+      end
+    }
+  end
 
   def handle_click(gtk_inputs)
     return unless gtk_inputs.mouse.down
 
     handle_palette_selection(gtk_inputs.mouse)
     handle_draw(gtk_inputs.mouse)
-    handle_resize(gtk_inputs.mouse)
+    handle_toolbar(gtk_inputs.mouse)
   end
 
   def handle_palette_selection(mouse)
@@ -65,34 +94,58 @@ class StructureEditor
     @structure[clicked_square[:grid_x], clicked_square[:grid_y]] = mouse.button_right ? nil : selected_tile[:prototype]
   end
 
-  def handle_resize(mouse)
-    clicked_resizer = @size_handles.find { |handle|
-      mouse.inside_rect? handle
+  def handle_toolbar(mouse)
+    clicked_button = toolbar.find { |button|
+      mouse.inside_rect? button
     }
-    return unless clicked_resizer
+    return unless clicked_button && clicked_button[:method]
 
-    send(clicked_resizer[:method])
+    send(clicked_button[:method])
   end
 
   def inc_w
     @w = [@w + 1, 10].min
-    update_grid
+    after_size_update
   end
 
   def dec_w
     @w = [@w - 1, 1].max
-    update_grid
+    after_size_update
   end
 
   def inc_h
     @h = [@h + 1, 10].min
-    update_grid
+    after_size_update
   end
 
   def dec_h
     @h = [@h - 1, 1].max
-    update_grid
+    after_size_update
   end
+
+  def save
+    if @structure_id == -1
+      @structure_id = @data_manager.structures.add @structure
+      @structure_count += 1
+    else
+      @data_manager.structures[@structure_id] = @structure
+    end
+  end
+
+  def load_structure(id)
+    @structure_id = id
+    @structure = @data_manager.structures[@structure_id]
+    after_structure_update
+  end
+
+  def load_previous
+    load_structure((@structure_id - 1) % @structure_count)
+  end
+
+  def load_next
+    load_structure((@structure_id + 1) % @structure_count)
+  end
+
 
   PROTOTYPES = [
     { type: :tree, block_movement: true },
@@ -162,11 +215,17 @@ class StructureEditor
     end
   end
 
-  def draw_size_handles(args)
-    args.outputs.primitives << [
-      Tile.for_letter('W').merge(x: 24 * 2, y: 24),
-      Tile.for_letter('H').merge(x: 24 * 6, y: 24)
-    ]
-    args.outputs.primitives << @size_handles
+  def toolbar_icon(letter, index)
+    Tile.for_letter(letter).tap { |result|
+      result.x = 24 * index
+      result.y = 24
+    }
+  end
+
+  def draw_toolbar(args)
+    args.outputs.primitives << toolbar
+    return if @structure_id == -1
+
+    args.outputs.primitives << [12 * 24, 48, @structure_id.to_s, 255, 255, 255].label
   end
 end
