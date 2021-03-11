@@ -244,6 +244,6 @@ class WorldGenerator
   end
 
   def generate_capsule
-    CapsuleShapeRoom.new(length: @rng.int_between(30, 50), diameter: @rng.int_between(20, 30))
+    CapsuleShapeRoom.new(length: 70, diameter: 40)
   end
 end
