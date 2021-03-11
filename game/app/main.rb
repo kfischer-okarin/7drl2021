@@ -45,44 +45,53 @@ class Input
   end
 end
 
-def handle_player_position_update(world, player_id)
-  player_position = world.get_entity_property(player_id, :position)
-  $world_view.center_on(player_position)
-  $visible_world.update(player_position, $world_view.origin)
-end
+class Game
+  def tick(args)
+    setup(args) if args.tick_count.zero?
 
-def setup(args)
-  generator = WorldGenerator.new
-  world = generator.generate
-  args.state.world = world
-  args.state.player_id = world.add_entity type: :player, position: [2, 5], velocity: [0, 0]
-  $visible_world = VisibleWorld.new(RenderedWorld.new(world), size: [40, 27])
-  $world_view = WorldView.new($visible_world, size: $visible_world.size)
-  $world_view.x = 0
-  $world_view.y = 3 * 24
-  handle_player_position_update(world, args.state.player_id)
-  $renderer = Renderer.new
-  $input = Input.new(args.state.player_id)
+    world = args.state.world
+    if @input.any?(args)
+      @input.apply_to(args, world)
+      world.tick
+      handle_player_position_update(world, args.state.player_id)
+    end
+
+    args.outputs.background_color = [0, 0, 0]
+    @world_view.tick(args)
+    args.outputs.primitives << @world_view
+    world.changed_positions.clear
+    @visible_world.updated = false
+    world.messages[0..2].each_with_index do |message, index|
+      @renderer.render_string(args, message, x: 24, y: index * 24, a: 255 - 90 * index)
+    end
+  end
+
+  private
+
+  def setup(args)
+    generator = WorldGenerator.new
+    world = generator.generate
+    args.state.world = world
+    args.state.player_id = world.add_entity type: :player, position: [2, 5], velocity: [0, 0]
+    @visible_world = VisibleWorld.new(RenderedWorld.new(world), size: [40, 27])
+    @world_view = WorldView.new(@visible_world, size: @visible_world.size)
+    @world_view.x = 0
+    @world_view.y = 3 * 24
+    handle_player_position_update(world, args.state.player_id)
+    @renderer = Renderer.new
+    @input = Input.new(args.state.player_id)
+  end
+
+  def handle_player_position_update(world, player_id)
+    player_position = world.get_entity_property(player_id, :position)
+    @world_view.center_on(player_position)
+    @visible_world.update(player_position, @world_view.origin)
+  end
 end
 
 def tick(args)
-  setup(args) if args.tick_count.zero?
-
-  world = args.state.world
-  if $input.any?(args)
-    $input.apply_to(args, world)
-    world.tick
-    handle_player_position_update(world, args.state.player_id)
-  end
-
-  args.outputs.background_color = [0, 0, 0]
-  $world_view.tick(args)
-  args.outputs.primitives << $world_view
-  world.changed_positions.clear
-  $visible_world.updated = false
-  world.messages[0..2].each_with_index do |message, index|
-    $renderer.render_string(args, message, x: 24, y: index * 24, a: 255 - 90 * index)
-  end
+  $scenes ||= [Game.new]
+  $scenes[0].tick(args)
 end
 
 $gtk.reset
