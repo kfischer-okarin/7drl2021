@@ -11,6 +11,7 @@ require 'app/field_of_view.rb'
 require 'app/world.rb'
 require 'app/world_view.rb'
 require 'app/world_generator.rb'
+require 'app/structure_editor.rb'
 
 class Renderer
   def render_string(args, string, attributes)
@@ -63,6 +64,10 @@ class Game
     @visible_world.updated = false
     world.messages[0..2].each_with_index do |message, index|
       @renderer.render_string(args, message, x: 24, y: index * 24, a: 255 - 90 * index)
+    end
+
+    if args.inputs.keyboard.key_down.f6
+      $scenes.unshift StructureEditor.new
     end
   end
 
