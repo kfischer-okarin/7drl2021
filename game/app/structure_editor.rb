@@ -1,4 +1,11 @@
 class StructureEditor
+  PROTOTYPES = [
+    { type: :tree, block_movement: true },
+    { type: :wall, block_movement: true },
+    { type: :small_wood_block, block_movement: true },
+    { type: :big_wood_block, block_movement: true }
+  ]
+
   def initialize(attributes = nil)
     values = attributes || {}
     @initialized = values[:initialized] || false
@@ -152,11 +159,6 @@ class StructureEditor
     @structure = nil
     after_size_update
   end
-
-  PROTOTYPES = [
-    { type: :tree, block_movement: true },
-    { type: :wall, block_movement: true }
-  ]
 
   def draw_palette(args)
     args.outputs.primitives << selected_tile_cursor

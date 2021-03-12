@@ -58,6 +58,10 @@ class Tile
         at_position([3, 13]).merge(Color::DARK_GRAY)
       when :floor
         for_letter('.').merge(Color::WHITE)
+      when :small_wood_block
+        for_letter('x').merge(Color::DARK_BROWN)
+      when :big_wood_block
+        for_letter('X').merge(Color::DARK_BROWN)
       end
     end
   end
