@@ -1,8 +1,8 @@
 require 'tests/test_helper.rb'
 
-def test_capsule_room_wall_positions(_args, assert)
-  room = CapsuleShapeRoom.new(length: 4, diameter: 5)
-  assert.contains_exactly! room.wall_positions, TestHelper.as_positions([
+def test_capsule(_args, assert)
+  shape = Shape::Capsule.new(length: 4, diameter: 5)
+  assert.contains_exactly! shape.positions, TestHelper.as_positions([
     ' xxxxxxxxxx ',
     'xx        xx',
     'x          x',
@@ -12,8 +12,8 @@ def test_capsule_room_wall_positions(_args, assert)
     ' xxxxxxxxxx '
   ]), 'length 4 diameter 5'
 
-  room = CapsuleShapeRoom.new(length: 3, diameter: 5)
-  assert.contains_exactly! room.wall_positions, TestHelper.as_positions([
+  shape = Shape::Capsule.new(length: 3, diameter: 5)
+  assert.contains_exactly! shape.positions, TestHelper.as_positions([
     ' xxxxxxxxx ',
     'xx       xx',
     'x         x',
@@ -23,8 +23,8 @@ def test_capsule_room_wall_positions(_args, assert)
     ' xxxxxxxxx '
   ]), 'length 3 diameter 5'
 
-  room = CapsuleShapeRoom.new(length: 3, diameter: 4)
-  assert.contains_exactly! room.wall_positions, TestHelper.as_positions([
+  shape = Shape::Capsule.new(length: 3, diameter: 4)
+  assert.contains_exactly! shape.positions, TestHelper.as_positions([
     ' xxxxxxx ',
     'xx     xx',
     'x       x',
@@ -34,38 +34,21 @@ def test_capsule_room_wall_positions(_args, assert)
   ]), 'length 3 diameter 4'
 end
 
-def test_capsule_room_room_positions(_args, assert)
-  room = CapsuleShapeRoom.new(length: 4, diameter: 5)
-  assert.contains_exactly! room.room_positions, TestHelper.as_positions([
-    '            ',
-    '  xxxxxxxx  ',
-    ' xxxxxxxxxx ',
-    ' xxxxxxxxxx ',
-    ' xxxxxxxxxx ',
-    '  xxxxxxxx  ',
-    '            '
-  ]), 'length 4 diameter 5'
+def test_rectangle(args, assert)
+  shape = Shape::Rectangle.new(w: 3, h: 4)
+  assert.contains_exactly! shape.positions, TestHelper.as_positions([
+    'xxx',
+    'x x',
+    'x x',
+    'xxx'
+  ]), 'w 3 h 4'
 
-  room = CapsuleShapeRoom.new(length: 3, diameter: 5)
-  assert.contains_exactly! room.room_positions, TestHelper.as_positions([
-    '           ',
-    '  xxxxxxx  ',
-    ' xxxxxxxxx ',
-    ' xxxxxxxxx ',
-    ' xxxxxxxxx ',
-    '  xxxxxxx  ',
-    '           '
-  ]), 'length 3 diameter 5'
-
-  room = CapsuleShapeRoom.new(length: 3, diameter: 4)
-  assert.contains_exactly! room.room_positions, TestHelper.as_positions([
-    '         ',
-    '  xxxxx  ',
-    ' xxxxxxx ',
-    ' xxxxxxx ',
-    '  xxxxx  ',
-    '         '
-  ]), 'length 3 diameter 4'
+  shape = Shape::Rectangle.new(w: 4, h: 3)
+  assert.contains_exactly! shape.positions, TestHelper.as_positions([
+    'xxxx',
+    'x  x',
+    'xxxx'
+  ]), 'w 4 h 3'
 end
 
 def test_structure_each(_args, assert)
