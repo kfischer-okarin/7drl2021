@@ -39,27 +39,12 @@ class FloodFill
   def calc
     until @frontier.empty?
       current = @frontier.shift
-      neighbors = neighbors_of(current)
+      neighbors = @map.neighbors_of(current).select { |position|
+        !@result.include?(position) && @map.passable?(current, position)
+      }
       @result.add_all neighbors
       @frontier.concat neighbors
     end
-  end
-
-  NEIGHBORS_OFFSETS = [
-    [-1,  1], [0,  1], [1,  1],
-    [-1,  0],          [1,  0],
-    [-1, -1], [0, -1], [1, -1]
-  ].map(&:freeze).freeze
-
-  def neighbors_of(position)
-    neighbor = [0, 0]
-    [].tap { |result|
-      NEIGHBORS_OFFSETS.each do |offset_x, offset_y|
-        neighbor.x = position.x + offset_x
-        neighbor.y = position.y + offset_y
-        result << neighbor.dup unless @result.include?(neighbor) || @map.impassable?(neighbor)
-      end
-    }
   end
 end
 
@@ -340,7 +325,7 @@ class WorldGenerator
   def generate
     place_stage_walls
 
-    @world.add_entity type: :player, player: true, position: [5, 20], velocity: [0, 0]
+    @world.add_entity PROTOTYPES[:player].merge(position: @player_start_position)
 
     30.times do
       place_slum_structure
@@ -351,7 +336,12 @@ class WorldGenerator
 
   def place_stage_walls
     wall_shape = Shape::Capsule.new(length: 70, diameter: 40)
+    @player_start_position = [5, 20]
+    @level_stair_position = [105, 20]
+
     place_if_not_exists(wall_shape.positions, PROTOTYPES[:wall])
+
+    @walkable_positions = FloodFill.new(map: PathfindableWorld.new(@world), start_position: @player_start_position).result
   end
 
   def place_slum_structure
@@ -367,8 +357,11 @@ class WorldGenerator
       [position.x + rect.x, position.y + rect.y]
     }
     placed_entity_ids = place_if_not_exists(positions, PROTOTYPES[:big_wood_block])
-    pathfinding = Pathfinding.new(PathfindableWorld.new(@world), from: [5, 20], to: [105, 20])
-    return if pathfinding.path_exists?
+    pathfinding = Pathfinding.new(PathfindableWorld.new(@world), from: @player_start_position, to: @level_stair_position)
+    if pathfinding.path_exists?
+      @walkable_positions.delete_all rect.each_position
+      return
+    end
 
     placed_entity_ids.each do |entity_id|
       @world.delete entity_id
@@ -401,6 +394,7 @@ class WorldGenerator
   end
 
   PROTOTYPES = {
+    player: { type: :player, player: true, velocity: [0, 0] },
     wall: { type: :wall, block_movement: true },
     big_wood_block: { type: :big_wood_block, block_movement: true },
     small_wood_block: { type: :small_wood_block, block_movement: true }

@@ -22,12 +22,10 @@ class Set
     end
   end
 
-  def -(other)
-    Set.new.tap { |result|
-      each do |element|
-        result << element unless other.include? element
-      end
-    }
+  def delete_all(other)
+    other.each do |element|
+      delete element
+    end
   end
 
   def dup
