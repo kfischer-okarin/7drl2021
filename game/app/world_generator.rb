@@ -12,6 +12,15 @@ class RNG
     int(max - min + 1) + min
   end
 
+  def int_in(range)
+    int_between(range.min, range.max)
+  end
+
+  def sample_from(array)
+    index = int_between(0, array.size - 1)
+    array[index]
+  end
+
   def bool
     @random.rand >= 0.5
   end
@@ -198,9 +207,16 @@ class Structure
     end
   end
 
-  def insert(area, at:)
-    area.each do |value, x, y|
+  def insert(structure, at:)
+    structure.each do |value, x, y|
       self[at.x + x, at.y + y] = value
+    end
+  end
+
+  def set_all(positions, tile, offset: nil)
+    offset_x, offset_y = offset || [0, 0]
+    positions.each do |position|
+      self[position.x + offset_x, position.y + offset_y] = tile
     end
   end
 

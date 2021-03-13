@@ -112,5 +112,27 @@ def test_structure_insert(_args, assert)
   ]
 end
 
+def test_structure_set_all(_args, assert)
+  s = Structure.new(w: 3, h: 3)
+  s.set_all(Set.new([[2, 2], [1, 1], [0, 0]]), :x)
+
+  assert.equal! s.tiles, [
+    :x, nil, nil,
+    nil, :x, nil,
+    nil, nil, :x
+  ]
+end
+
+def test_structure_set_all_with_offset(_args, assert)
+  s = Structure.new(w: 3, h: 3)
+  s.set_all(Set.new([[1, 1], [0, 0]]), :x, offset: [1, 0])
+
+  assert.equal! s.tiles, [
+    nil, :x, nil,
+    nil, nil, :x,
+    nil, nil, nil
+  ]
+end
+
 $gtk.reset 100
 $gtk.log_level = :off
