@@ -15,15 +15,6 @@ require 'app/world_generator.rb'
 require 'app/data_manager.rb'
 require 'app/structure_editor.rb'
 
-module HotloadExtension
-  def on_load_succeeded(file)
-    super
-    # $scenes[0] = StructureEditor.new if $scenes[0].is_a? StructureEditor
-  end
-end
-
-GTK::Runtime.prepend HotloadExtension
-
 class Renderer
   def render_string(args, string, attributes)
     args.outputs.primitives << string.chars.map_with_index { |char, index|
