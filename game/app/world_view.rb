@@ -207,10 +207,10 @@ class VisibleWorld
   def obstacles
     [].tap { |result|
       obstacles = Set.new
-      @rendered_world.world.entities_with(:block_movement).each { |entity|
+      @rendered_world.world.entities_with(:block_movement).each do |entity|
         position = entity[:position]
         obstacles << relative_position(position) if position.inside_grid_rect? @rect
-      }
+      end
       # TODO: Merge in advance
       merge_obstacles(obstacles).each do |obstacle|
         result << obstacle
