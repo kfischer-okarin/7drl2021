@@ -4,6 +4,7 @@ require 'lib/resources.rb'
 require 'lib/rect_extensions.rb'
 require 'lib/array_extensions.rb'
 require 'lib/set.rb'
+require 'lib/priority_queue.rb'
 require 'lib/tilemap_view/require.rb'
 
 require 'app/resources.rb'
@@ -13,6 +14,15 @@ require 'app/world_view.rb'
 require 'app/world_generator.rb'
 require 'app/data_manager.rb'
 require 'app/structure_editor.rb'
+
+module HotloadExtension
+  def on_load_succeeded(file)
+    super
+    # $scenes[0] = StructureEditor.new if $scenes[0].is_a? StructureEditor
+  end
+end
+
+GTK::Runtime.prepend HotloadExtension
 
 class Renderer
   def render_string(args, string, attributes)
@@ -78,7 +88,7 @@ class Game
     generator = WorldGenerator.new
     world = generator.generate
     args.state.world = world
-    args.state.player_id = world.add_entity type: :player, position: [2, 5], velocity: [0, 0]
+    args.state.player_id = world.entities_with(:player).to_a[0][:id]
     @visible_world = VisibleWorld.new(RenderedWorld.new(world), size: [40, 27])
     @world_view = WorldView.new(@visible_world, size: @visible_world.size)
     @world_view.x = 0

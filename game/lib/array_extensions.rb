@@ -3,6 +3,10 @@ class Array
     map_with_index { |value, index| value + other[index] }
   end
 
+  def vector_sub(other)
+    map_with_index { |value, index| value - other[index] }
+  end
+
   def zero?
     all?(&:zero?)
   end

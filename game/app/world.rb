@@ -1,6 +1,35 @@
 class World
   attr_reader :changed_positions, :messages
 
+  class EntitySet < Set
+    def initialize
+      super()
+      @entities_by_position = {}
+    end
+
+    def <<(entity)
+      index_by_position entity
+      super
+    end
+
+    def inside_rect(rect)
+      Enumerator.new do |y|
+        rect.each_position do |position|
+          next unless @entities_by_position.key? position
+
+          @entities_by_position[position].each do |entity|
+            y << entity
+          end
+        end
+      end
+    end
+
+    def index_by_position(entity)
+      @entities_by_position[entity[:position]] ||= Set.new
+      @entities_by_position[entity[:position]] << entity
+    end
+  end
+
   def initialize(entities: nil, next_entity_id: 0)
     @entities = entities || {}
     @entities_by_position = {}
@@ -15,7 +44,7 @@ class World
   end
 
   def entities_with(component)
-    @entities_by_component[component]
+    @entities_by_component[component] ||= EntitySet.new
   end
 
   def entities
@@ -79,8 +108,7 @@ class World
     entity.each do |component, _|
       next if component == :id
 
-      @entities_by_component[component] ||= []
-      @entities_by_component[component] << entity
+      entities_with(component) << entity
     end
   end
 

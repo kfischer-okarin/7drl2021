@@ -63,6 +63,59 @@ class FloodFill
   end
 end
 
+class Pathfinding
+  def initialize(map, from:, to:)
+    @map = map
+    @from = from
+    @to = to
+
+    find_path
+  end
+
+  def path_exists?
+    @path_exists
+  end
+
+  private
+
+  def find_path
+    frontier = PriorityQueue.new
+    frontier.insert @from, 0
+    came_from = {}
+    cost_so_far = { @from => 0 }
+
+    until frontier.empty?
+      current = frontier.pop
+
+      break if current == @to
+
+      @map.neighbors_of(current).each do |neighbor|
+        next unless @map.passable?(current, neighbor.vector_sub(current))
+
+        new_cost = cost_so_far[current] + move_cost(current, neighbor)
+        next unless !cost_so_far.key?(neighbor) || new_cost < cost_so_far[neighbor]
+
+        cost_so_far[neighbor] = new_cost
+        priority = new_cost + move_cost_heuristic(neighbor)
+        frontier.insert neighbor, priority
+        came_from[neighbor] = current
+      end
+    end
+
+    @path_exists = cost_so_far.key? @to
+
+    # @path = calc_path(to, came_from)
+  end
+
+  def move_cost(from, to)
+    1
+  end
+
+  def move_cost_heuristic(position)
+    (@to.x - position.x).abs + (@to.y - position.y).abs
+  end
+end
+
 module Shape
   class Capsule
     def initialize(length:, diameter:)
@@ -81,10 +134,6 @@ module Shape
         result.add_all side_wall(@diameter + 1)
         result.add_all capsule_ends
       }
-    end
-
-    def impassable?(position)
-      wall_positions.include? position
     end
 
     def side_wall(y)
@@ -138,6 +187,8 @@ module Shape
   end
 
   class Rectangle
+    attr_reader :w, :h
+
     def initialize(w:, h:)
       @w = w
       @h = h
@@ -251,38 +302,107 @@ class Structure
   end
 end
 
-class WorldGenerator
-  def initialize
-    @rng = RNG.new
+class PathfindableWorld
+  def initialize(world)
+    @world = world
   end
 
-  def generate
-    World.new.tap { |world|
-      # 10.times do
-      #   pos = [@rng.int(20), @rng.int(20)]
-      #   wall_length = @rng.int_between(3, 6)
-      #   size = @rng.bool ? [1, wall_length] : [wall_length, 1]
-      #   (pos + size).each_position do |position|
-      #     next if world.entities_at(position).any? { |entity| entity[:block_movement] }
-
-      #     world.add_entity type: :tree, position: position, block_movement: true
-      #   end
-      # end
-      place_walls world, generate_capsule, [-10, -10]
+  def passable?(from_position, to_position)
+    @world.entities_at(to_position).none? { |entity|
+      entity[:block_movement]
     }
   end
 
-  def place_walls(world, shape, position)
-    wall_prototype = { type: :wall, block_movement: true }
-    shape.positions.each do |wall_position|
-      placed_position = [wall_position.x + position.x, wall_position.y + position.y]
-      next if world.has?({ type: :wall }, at: placed_position)
+  NEIGHBORS_OFFSETS = [
+    [-1,  1], [0,  1], [1,  1],
+    [-1,  0],          [1,  0],
+    [-1, -1], [0, -1], [1, -1]
+  ].map(&:freeze).freeze
 
-      world.add_entity wall_prototype.merge(position: placed_position)
+  def neighbors_of(position)
+    neighbor = [0, 0]
+    [].tap { |result|
+      NEIGHBORS_OFFSETS.each do |offset_x, offset_y|
+        neighbor.x = position.x + offset_x
+        neighbor.y = position.y + offset_y
+        result << neighbor.dup
+      end
+    }
+  end
+end
+
+class WorldGenerator
+  def initialize
+    @rng = RNG.new
+    @world = World.new
+  end
+
+  def generate
+    place_stage_walls
+
+    @world.add_entity type: :player, player: true, position: [5, 20], velocity: [0, 0]
+
+    30.times do
+      place_slum_structure
+    end
+
+    @world
+  end
+
+  def place_stage_walls
+    wall_shape = Shape::Capsule.new(length: 70, diameter: 40)
+    place_if_not_exists(wall_shape.positions, PROTOTYPES[:wall])
+  end
+
+  def place_slum_structure
+    size = [@rng.int_between(7, 10), @rng.int_between(7, 10)]
+    rect = find_rect(size, inside_rect: [0, 0, 110, 40]) do |result|
+      @world.entities_with(:block_movement).inside_rect(result).none? &&
+        @world.entities_with(:player).inside_rect(result).none?
+    end
+    return unless rect
+
+    shape = Shape::Rectangle.new(w: size.x, h: size.y)
+    positions = shape.positions.map { |position|
+      [position.x + rect.x, position.y + rect.y]
+    }
+    placed_entity_ids = place_if_not_exists(positions, PROTOTYPES[:big_wood_block])
+    pathfinding = Pathfinding.new(PathfindableWorld.new(@world), from: [5, 20], to: [105, 20])
+    return if pathfinding.path_exists?
+
+    placed_entity_ids.each do |entity_id|
+      @world.delete entity_id
     end
   end
 
-  def generate_capsule
-    Shape::Capsule.new(length: 70, diameter: 40)
+  def find_rect(size, inside_rect:, &condition)
+    retries = 0
+    loop do
+      x = @rng.int_between(inside_rect.grid_left, inside_rect.grid_right - size.x - 1)
+      y = @rng.int_between(inside_rect.grid_bottom, inside_rect.grid_top - size.y - 1)
+
+      result_rect = [x, y, size.x, size.y]
+      return result_rect if condition.call(result_rect)
+
+      retries += 1
+      return if retries >= 10
+    end
   end
+
+  def place_if_not_exists(positions, prototype)
+    [].tap { |placed_positions|
+      positions.each do |position|
+        next if @world.has?({ type: prototype[:type] }, at: position)
+
+        @world.add_entity prototype.merge(position: position)
+        placed_positions << position
+      end
+    }
+  end
+
+  PROTOTYPES = {
+    wall: { type: :wall, block_movement: true },
+    big_wood_block: { type: :big_wood_block, block_movement: true },
+    small_wood_block: { type: :small_wood_block, block_movement: true }
+  }.freeze
 end
