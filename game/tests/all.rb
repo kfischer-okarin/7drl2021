@@ -4,3 +4,4 @@ require 'tests/app/world.rb'
 require 'tests/app/world_generator.rb'
 
 require 'tests/lib/tilemap_view/all.rb'
+require 'tests/lib/hoard.rb'

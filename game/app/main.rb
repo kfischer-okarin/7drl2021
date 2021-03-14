@@ -6,6 +6,7 @@ require 'lib/array_extensions.rb'
 require 'lib/set.rb'
 require 'lib/priority_queue.rb'
 require 'lib/tilemap_view/require.rb'
+require 'lib/hoard.rb'
 
 require 'app/resources.rb'
 require 'app/field_of_view.rb'
