@@ -7,7 +7,11 @@ class Hoard
   end
 
   def [](key)
-    $gtk.deserialize_state filename(key)
+    deserialized = $gtk.deserialize_state filename(key)
+    return deserialized unless deserialized.is_a?(Hash) && deserialized[:serialized_class]
+
+    serialized_class = Kernel.const_get deserialized[:serialized_class]
+    serialized_class.deserialize(deserialized)
   rescue TypeError
     # Not a hash try deserializing manually
     file_content = $gtk.read_file filename(key)
@@ -34,5 +38,19 @@ class Hoard
 
   def serialize_object(key, object)
     $gtk.serialize_state(filename(key), object)
+  end
+end
+
+module Hoardable
+  def serialize
+    to_h.merge(serialized_class: self.class.name)
+  end
+
+  def to_s
+    serialize.inspect
+  end
+
+  def inspect
+    serialize.inspect
   end
 end
