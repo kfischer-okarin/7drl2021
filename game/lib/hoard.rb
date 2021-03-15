@@ -3,23 +3,27 @@ class Hoard
 
   def initialize(directory)
     @directory = directory
-    @index = self[INDEX_KEY] || { files: [] }
+    @index = self[INDEX_KEY] || []
   end
 
   def [](key)
     $gtk.deserialize_state filename(key)
+  rescue TypeError
+    # Not a hash try deserializing manually
+    file_content = $gtk.read_file filename(key)
+    eval file_content
   rescue SyntaxError
     # Non-existing or invalid file
   end
 
   def []=(key, object)
     serialize_object(key, object)
-    @index[:files] << key
+    @index << key
     serialize_object(INDEX_KEY, @index)
   end
 
   def size
-    @index[:files].size
+    @index.size
   end
 
   private

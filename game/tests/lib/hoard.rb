@@ -25,7 +25,7 @@ end
 
 def test_hoard_size(args, assert)
   fake_fs = HoardTest::FakeFileSystem.new(
-    'data/.index' => { files: ["abc.txt", "another_file.txt"] }.inspect
+    'data/.index' => ["abc.txt", "another_file.txt"].inspect
   )
 
   HoardTest.with_method_replaced(args.gtk, :read_file, fake_fs.method(:read)) do
@@ -45,7 +45,7 @@ end
 
 def test_hoard_access(args, assert)
   fake_fs = HoardTest::FakeFileSystem.new(
-    'data/.index' => { files: ["abc.txt"] }.inspect,
+    'data/.index' => ["abc.txt"].inspect,
     'data/abc.txt' => {1=>2}.inspect
   )
 
@@ -64,7 +64,7 @@ def test_hoard_set(args, assert)
       hoard['abc.txt'] = { 2 => 3 }
 
       assert.equal! fake_fs.files, {
-        'data/.index' => { files: ['abc.txt'] }.inspect,
+        'data/.index' => ['abc.txt'].inspect,
         'data/abc.txt' => { 2 => 3 }.inspect
       }
     end
