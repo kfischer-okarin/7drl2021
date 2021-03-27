@@ -317,9 +317,10 @@ class PathfindableWorld
 end
 
 class WorldGenerator
-  def initialize
+  def initialize(args)
     @rng = RNG.new
-    @world = World.new
+    @world_state = World.build_empty_state(args)
+    @world = World.new @world_state
   end
 
   def generate
@@ -331,7 +332,7 @@ class WorldGenerator
       place_slum_structure
     end
 
-    @world
+    @world_state
   end
 
   def place_stage_walls

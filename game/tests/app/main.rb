@@ -1,7 +1,7 @@
 require 'tests/test_helper.rb'
 
 def test_render_world(args, assert)
-  world = World.new
+  world = World.new World.build_empty_state(args)
   world.add_entity type: :player, position: [12, 13]
   world_view = WorldView.new(RenderedWorld.new(world), size: [5, 5])
   world_view.origin = [10, 10]
@@ -22,8 +22,8 @@ def test_render_world(args, assert)
   end
 end
 
-def test_world_view_can_center_on_position(_args, assert)
-  world = World.new
+def test_world_view_can_center_on_position(args, assert)
+  world = World.new World.build_empty_state(args)
   world_view = WorldView.new(world, size: [5, 5])
 
   world_view.center_on([12, 15])
@@ -32,7 +32,7 @@ def test_world_view_can_center_on_position(_args, assert)
 end
 
 def test_input_sets_player_velocity(args, assert)
-  world = World.new
+  world = World.new World.build_empty_state(args)
   player_id = world.add_entity type: :player, position: [2, 5]
   input = Input.new(player_id)
 

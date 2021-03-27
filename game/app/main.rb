@@ -53,7 +53,7 @@ class Game
   def tick(args)
     setup(args) if args.tick_count.zero?
 
-    world = args.state.world
+    world = World.new args.state.world
     if @input.any?(args)
       @input.apply_to(args, world)
       world.tick
@@ -77,9 +77,9 @@ class Game
   private
 
   def setup(args)
-    generator = WorldGenerator.new
-    world = generator.generate
-    args.state.world = world
+    generator = WorldGenerator.new(args)
+    args.state.world = generator.generate
+    world = World.new args.state.world
     args.state.player_id = world.entities_with(:player).to_a[0][:id]
     @visible_world = VisibleWorld.new(RenderedWorld.new(world), size: [40, 27])
     @world_view = WorldView.new(@visible_world, size: @visible_world.size)

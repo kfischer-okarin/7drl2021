@@ -79,7 +79,7 @@ module GTK
       @assertion_performed = true
 
       base_error = "Expected\n  #{collection.inspect}\nto contain exactly elements:\n  #{elements.inspect}"
-      raise "#{base_error}\nBut they had different sizes\n#{message}" unless collection.size == elements.size
+      raise "#{base_error}\nBut they had different sizes\n#{message}" unless collection.to_a.size == elements.size
 
       elements.each do |element|
         raise "#{base_error}\nBut it didn't contain #{element.inspect}\n#{message}" unless collection.include? element
